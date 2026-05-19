@@ -1,59 +1,76 @@
 .issue-search-box {
   margin-bottom: 16px;
-  padding: 14px;
-  border: 1px solid #ddd;
-  background: #fafafa;
+  padding: 16px;
+  border: 1px solid #dce3ee;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.issue-search-box__title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.issue-search-box__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .issue-search-box__row {
   display: flex;
   align-items: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.issue-search-box__bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  margin-top: 12px;
-}
-
-.issue-search-box__checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  cursor: pointer;
+  flex-wrap: wrap;
 }
 
 .issue-search-box__buttons {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
+  padding-bottom: 6px;
 }
 
 .search-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 130px;
+  gap: 6px;
+  min-width: 160px;
 }
 
-.search-field--keyword {
-  min-width: 220px;
+.search-field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  min-width: auto;
+  padding-bottom: 6px;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .search-field__label {
   font-size: 13px;
-  color: #333;
+  font-weight: 700;
+  color: #374151;
+}
+
+.search-field__checkbox-label {
+  font-size: 14px;
+  color: #374151;
 }
 
 .search-field__control {
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid #bbb;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
   background: #fff;
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.search-field__control--select {
+  width: 100%;
+  min-width: 220px;
 }

@@ -1,14 +1,17 @@
 .grid-section {
   width: 100%;
+  padding: 16px;
+  border: 1px solid #dce3ee;
+  border-radius: 14px;
+  background: #fff;
 }
 
-.grid-section__header {
+.grid-section__toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
-  flex-direction: column;
 }
 
 .grid-section__left {
@@ -21,17 +24,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .grid-section__title {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
+  color: #dc2626;
 }
 
 .grid-section__count {
   font-size: 14px;
-  color: #666;
+  color: #374151;
+  font-weight: 700;
 }
 
 .grid-section__body {

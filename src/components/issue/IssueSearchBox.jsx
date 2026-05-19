@@ -1,141 +1,94 @@
 import React from "react";
+
+import FormItem from "components/common/FormItem";
+import CodeSelect from "components/common/CodeSelect";
+
 import "./IssueSearchBox.css";
 
 const IssueSearchBox = ({
-  searchCondition,
-  statusOptions,
-  priorityOptions,
-  onlyUnsetUsage,
-  onChangeSearchCondition,
-  onChangeOnlyUnsetUsage,
-  onSearch,
+  rscOwnerCodeSearchForm,
+  usageOptions,
+  onChangeSearchField,
   onReset,
+  onSearch,
   disabled,
 }) => {
+  const { item } = rscOwnerCodeSearchForm;
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (onSearch) {
+      onSearch();
+    }
+  };
+
+  const handleUsageChange = (value) => {
+    onChangeSearchField("usageCd", value);
+  };
+
   return (
     <section className="issue-search-box">
-      <div className="issue-search-box__row">
-        <div className="search-field">
-          <label className="search-field__label">상태</label>
+      <div className="issue-search-box__title">조회조건</div>
 
-          <select
-            className="search-field__control"
-            value={searchCondition.statusCode}
-            onChange={(event) => {
-              onChangeSearchCondition("statusCode", event.target.value);
-            }}
+      <form className="issue-search-box__form" onSubmit={handleSubmit}>
+        <div className="issue-search-box__row">
+          <FormItem
+            label="owner code"
+            name="ownerCd"
+            value={item.ownerCd}
+            onChange={onChangeSearchField}
             disabled={disabled}
           >
-            <option value="">전체</option>
+            <input
+              type="text"
+              className="search-field__control"
+              placeholder="owner code"
+            />
+          </FormItem>
 
-            {statusOptions.map((option) => {
-              return (
-                <option key={option.code} value={option.code}>
-                  {option.name}
-                </option>
-              );
-            })}
-          </select>
-        </div>
+          <div className="search-field">
+            <label className="search-field__label" htmlFor="usageCd">
+              용도
+            </label>
+            <CodeSelect
+              name="usageCd"
+              value={item.usageCd}
+              options={usageOptions}
+              placeholder="용도를(을) 선택하세요"
+              onChange={handleUsageChange}
+              disabled={disabled}
+              className="search-field__control search-field__control--select"
+            />
+          </div>
 
-        <div className="search-field">
-          <label className="search-field__label">우선순위</label>
-
-          <select
-            className="search-field__control"
-            value={searchCondition.priorityCode}
-            onChange={(event) => {
-              onChangeSearchCondition("priorityCode", event.target.value);
-            }}
+          <FormItem
+            label="용도없음"
+            name="noUsage"
+            value={item.noUsage}
+            onChange={onChangeSearchField}
             disabled={disabled}
+            className="search-field search-field--checkbox"
           >
-            <option value="">전체</option>
+            <input type="checkbox" />
+          </FormItem>
 
-            {priorityOptions.map((option) => {
-              return (
-                <option key={option.code} value={option.code}>
-                  {option.name}
-                </option>
-              );
-            })}
-          </select>
+          <div className="issue-search-box__buttons">
+            <button
+              type="button"
+              className="btn btn-gray"
+              onClick={onReset}
+              disabled={disabled}
+            >
+              초기화
+            </button>
+
+            <button type="submit" className="btn btn-blue" disabled={disabled}>
+              검색
+            </button>
+          </div>
         </div>
-
-        <div className="search-field search-field--keyword">
-          <label className="search-field__label">검색어</label>
-
-          <input
-            type="text"
-            className="search-field__control"
-            value={searchCondition.keyword}
-            onChange={(event) => {
-              onChangeSearchCondition("keyword", event.target.value);
-            }}
-            placeholder="제목을 입력하세요"
-            disabled={disabled}
-          />
-        </div>
-
-        <div className="search-field">
-          <label className="search-field__label">시작일</label>
-
-          <input
-            type="date"
-            className="search-field__control"
-            value={searchCondition.startDate}
-            onChange={(event) => {
-              onChangeSearchCondition("startDate", event.target.value);
-            }}
-            disabled={disabled}
-          />
-        </div>
-
-        <div className="search-field">
-          <label className="search-field__label">종료일</label>
-
-          <input
-            type="date"
-            className="search-field__control"
-            value={searchCondition.endDate}
-            onChange={(event) => {
-              onChangeSearchCondition("endDate", event.target.value);
-            }}
-            disabled={disabled}
-          />
-        </div>
-      </div>
-
-      <div className="issue-search-box__bottom">
-        <label className="issue-search-box__checkbox">
-          <input
-            type="checkbox"
-            checked={onlyUnsetUsage}
-            onChange={onChangeOnlyUnsetUsage}
-            disabled={disabled}
-          />
-          <span>용도 미설정만 보기</span>
-        </label>
-
-        <div className="issue-search-box__buttons">
-          <button
-            type="button"
-            className="btn btn-gray"
-            onClick={onReset}
-            disabled={disabled}
-          >
-            초기화
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-blue"
-            onClick={onSearch}
-            disabled={disabled}
-          >
-            조회
-          </button>
-        </div>
-      </div>
+      </form>
     </section>
   );
 };
