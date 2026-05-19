@@ -1,8 +1,13 @@
+/**
+ * useForm.js
+ *
+ * Owner Code 조회조건 form state hook
+ * rscOwnerCodeSearchForm.item 으로 검색/초기화
+ */
+
 import { useCallback, useState } from "react";
 
-/**
- * Owner Code 조회조건 초기값
- */
+/** 조회조건 초기값 (초기화 버튼·최초 조회에 사용) */
 export const OWNER_CODE_SEARCH_INITIAL_ITEM = {
   ownerCd: "",
   usageCd: "",

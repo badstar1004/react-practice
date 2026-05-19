@@ -1,3 +1,12 @@
+/**
+ * IssueSearchBox.jsx
+ *
+ * Owner Code 조회조건 영역
+ * - form + FormItem 으로 ownerCd, noUsage 입력
+ * - 용도(usageCd)는 CodeSelect 사용
+ * - 검색/초기화는 부모(IssueGridPage)에서 처리
+ */
+
 import React from "react";
 
 import FormItem from "components/common/FormItem";

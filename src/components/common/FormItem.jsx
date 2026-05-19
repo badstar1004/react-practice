@@ -1,10 +1,12 @@
+/**
+ * FormItem.jsx
+ *
+ * 조회 form 필드 래퍼 — label + control
+ * children에 input/select를 넣고 value, onChange(name, value)로 form item과 연결
+ */
+
 import React from "react";
 
-/**
- * form 조회조건 한 필드를 감싸는 컴포넌트
- *
- * value / onChange(name, value) 로 부모 form item 과 연결합니다.
- */
 const FormItem = ({
   label,
   name,

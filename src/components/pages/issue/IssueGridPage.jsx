@@ -1,3 +1,13 @@
+/**
+ * IssueGridPage.jsx
+ *
+ * OwnerCodeInf(WorkAreaCd, OwnerCd, UsageCd) 관리 화면
+ *
+ * - 조회조건: IssueSearchBox + useForm(rscOwnerCodeSearchForm)
+ * - 그리드: AG Grid, 수정 모드에서 UsageCd만 CodeSelect로 편집
+ * - 저장: 변경된 행만 API 전송, 저장 전 그리드 행 용도 필수 검사
+ */
+
 import React, {
   useCallback,
   useEffect,
@@ -23,12 +33,13 @@ import { useForm, OWNER_CODE_SEARCH_INITIAL_ITEM } from "hooks/useForm";
 
 import "./IssueGridPage.css";
 
-/** OwnerCodeInf 수정 대상 컬럼 */
+/** 수정·변경 비교 대상 컬럼 (OwnerCodeInf.UsageCd) */
 const EDITABLE_FIELDS = ["usageCd"];
 
-/** API 연동 전 샘플 데이터 사용 여부 */
+/** API 미연동 시 화면 테스트용 샘플 데이터 사용 여부 */
 const USE_SAMPLE_DATA = true;
 
+/** row 배열 얕은 복사 (Redux/원본과 화면 state 분리) */
 const cloneRows = (rows) => {
   if (!Array.isArray(rows)) {
     return [];
@@ -39,6 +50,7 @@ const cloneRows = (rows) => {
   });
 };
 
+/** PK 기준 row 고유 키 (workAreaCd + ownerCd) */
 const getRowKey = (row) => {
   if (!row) {
     return "";
@@ -47,6 +59,7 @@ const getRowKey = (row) => {
   return `${row.workAreaCd}|${row.ownerCd}`;
 };
 
+/** row 배열 → { rowKey: row } Map (원본·변경 비교용) */
 const createRowMap = (rows) => {
   return rows.reduce((acc, row) => {
     acc[getRowKey(row)] = row;
@@ -54,6 +67,7 @@ const createRowMap = (rows) => {
   }, {});
 };
 
+/** null/undefined/공백 정규화 */
 const normalizeValue = (value) => {
   if (value === null || value === undefined) {
     return "";
@@ -70,10 +84,12 @@ const toStringValue = (value) => {
   return String(value);
 };
 
+/** UsageCd 미설정 여부 */
 const isUnsetUsageRow = (row) => {
   return normalizeValue(row && row.usageCd) === "";
 };
 
+/** 원본 대비 수정 대상 컬럼 변경 여부 */
 const isEditableFieldChanged = (originRow, currentRow) => {
   if (!originRow || !currentRow) {
     return false;
@@ -86,6 +102,7 @@ const isEditableFieldChanged = (originRow, currentRow) => {
   });
 };
 
+/** API 응답 옵션 → CodeSelect { code, name } 형태 */
 const getCodeValue = (option) => {
   return (
     option.code ||
@@ -117,6 +134,7 @@ const normalizeCodeOptions = (codeList, fallbackList) => {
   });
 };
 
+/** 코드값 → 표시명 */
 const findCodeName = (codeList, value) => {
   if (!codeList || codeList.length === 0) {
     return value || "-";
@@ -129,6 +147,7 @@ const findCodeName = (codeList, value) => {
   return found ? found.name : value || "-";
 };
 
+/** 저장 API 요청 body 한 행 */
 const toSaveRow = (row) => {
   return {
     workAreaCd: row.workAreaCd,
@@ -137,6 +156,7 @@ const toSaveRow = (row) => {
   };
 };
 
+/** API 연동 전 그리드 테스트용 샘플 (15건) */
 const createSampleList = () => {
   return [
     { workAreaCd: "DEFAULT", ownerCd: "CD", usageCd: "DEV" },
@@ -162,6 +182,7 @@ const IssueGridPage = () => {
   const { rscOwnerCodeSearchForm, setSearchFormField, resetSearchForm } =
     useForm();
 
+  /* ----- Redux state ----- */
   const ownerCodeList = useSelector((state) => {
     return state.get(ISSUE_MGMT)?.ownerCodeList || [];
   });
@@ -182,6 +203,7 @@ const IssueGridPage = () => {
     return state.get(ISSUE_MGMT)?.error;
   });
 
+  /** 용도 콤보 옵션 (API 없으면 fallback) */
   const usageOptions = useMemo(() => {
     return normalizeCodeOptions(usageCodeList, [
       { code: "DEV", name: "개발용" },
@@ -190,16 +212,20 @@ const IssueGridPage = () => {
     ]);
   }, [usageCodeList]);
 
+  /* ----- 화면 전용 state (Redux issueList와 분리) ----- */
   const [rowData, setRowData] = useState([]);
+  /** { rowKey: 저장용 row } 변경 행 추적 */
   const [changedRowMap, setChangedRowMap] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
-  /** 용도없음 체크 상태에서 수정 진입 시, 화면에 고정할 row key 목록 */
+  /** 용도없음 체크 후 수정 진입 시, 필터에서 빠지지 않도록 고정할 row key 목록 */
   const [editSnapshotRowKeys, setEditSnapshotRowKeys] = useState(null);
 
+  /** 마지막 조회(검색) 시점 원본 — 취소 시 복구 */
   const originRowDataRef = useRef([]);
   const originRowMapRef = useRef({});
   const gridApiRef = useRef(null);
 
+  /** 최초 진입: 용도 공통코드 + 목록 조회 */
   useEffect(() => {
     dispatch(
       fetchCommonCodeRequest({
@@ -210,6 +236,7 @@ const IssueGridPage = () => {
     dispatch(fetchOwnerCodeListRequest(OWNER_CODE_SEARCH_INITIAL_ITEM));
   }, [dispatch]);
 
+  /** API 목록 수신 → rowData·원본 ref 갱신 */
   useEffect(() => {
     const nextRows = cloneRows(ownerCodeList);
 
@@ -233,6 +260,7 @@ const IssueGridPage = () => {
     originRowMapRef.current = createRowMap(nextRows);
   }, [ownerCodeList]);
 
+  /** 샘플 데이터 (USE_SAMPLE_DATA && API 빈 목록) */
   useEffect(() => {
     if (!USE_SAMPLE_DATA) {
       return;
@@ -258,6 +286,11 @@ const IssueGridPage = () => {
     });
   }, [changedRowMap]);
 
+  /**
+   * AG Grid에 넘길 rowData
+   * - 수정+스냅샷: 수정 진입 시 행 고정 (용도 선택해도 목록에서 사라지지 않음)
+   * - 용도없음 체크: UsageCd 빈 행만 표시
+   */
   const displayRowData = useMemo(() => {
     if (isEditMode && editSnapshotRowKeys && editSnapshotRowKeys.length > 0) {
       const keySet = {};
@@ -285,6 +318,10 @@ const IssueGridPage = () => {
     editSnapshotRowKeys,
   ]);
 
+  /**
+   * 그리드 셀에서 용도 변경 시 호출 (CodeSelectRenderer → context)
+   * setTimeout: AG Grid 렌더 중 React setState 경고 방지
+   */
   const addChangedRow = useCallback((changedRow, field, value) => {
     const rowKey = getRowKey(changedRow);
 
@@ -381,6 +418,7 @@ const IssueGridPage = () => {
     setIsEditMode(true);
   }, [rowData, rscOwnerCodeSearchForm.item.noUsage]);
 
+  /** 마지막 검색 결과(originRowDataRef)로 복구 */
   const handleCancel = useCallback(() => {
     const originRows = cloneRows(originRowDataRef.current);
 
@@ -390,6 +428,7 @@ const IssueGridPage = () => {
     setIsEditMode(false);
   }, []);
 
+  /** rowKey로 AG Grid RowNode 탐색 */
   const findRowNodeByKey = useCallback((api, rowKey) => {
     if (!api || !rowKey) {
       return null;
@@ -410,6 +449,7 @@ const IssueGridPage = () => {
     return targetNode;
   }, []);
 
+  /** 저장 검증 실패 시 해당 행 선택·스크롤 */
   const selectUsageRow = useCallback(
     (row) => {
       const api = gridApiRef.current;
@@ -441,6 +481,9 @@ const IssueGridPage = () => {
     [findRowNodeByKey],
   );
 
+  /**
+   * 저장 전 검증: 그리드(수정 모드면 displayRowData) 행 중 UsageCd 미선택 확인
+   */
   const validateUsageOnSave = useCallback(() => {
     const rowsToValidate = isEditMode ? displayRowData : rowData;
 
@@ -474,6 +517,7 @@ const IssueGridPage = () => {
 
   const prevSavingRef = useRef(false);
 
+  /** 저장 완료 후 수정 모드 종료 */
   useEffect(() => {
     if (prevSavingRef.current && !saving && !error) {
       setIsEditMode(false);
@@ -485,6 +529,7 @@ const IssueGridPage = () => {
     prevSavingRef.current = saving;
   }, [saving, error]);
 
+  /** 수정 모드 전환 시 용도 컬럼 셀 리프레시 (조회↔편집 UI) */
   useEffect(() => {
     const api = gridApiRef.current;
 

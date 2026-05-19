@@ -1,3 +1,9 @@
+/**
+ * Header.jsx
+ *
+ * 그리드 섹션 헤더 (제목, 건수, 버튼) + children(그리드 본문)
+ */
+
 import React from "react";
 import "./Header.css";
 

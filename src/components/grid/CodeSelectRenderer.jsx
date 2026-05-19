@@ -1,3 +1,13 @@
+/**
+ * CodeSelectRenderer.jsx
+ *
+ * AG Grid 용도(UsageCd) 컬럼용 셀 렌더러
+ *
+ * - 조회 모드: 코드명 텍스트 표시
+ * - 수정 모드: CodeSelect 표시, 변경 시 context.addChangedRow 호출
+ * - setDataValue + setTimeout(addChangedRow): 그리드 반영 및 React state 동기화
+ */
+
 import React from "react";
 import CodeSelect from "components/common/CodeSelect";
 
@@ -27,6 +37,7 @@ class CodeSelectRenderer extends React.Component {
     };
   }
 
+  /** AG Grid 셀 갱신 시 호출 */
   refresh(params) {
     this.setState({
       value: params.value || "",
@@ -43,6 +54,7 @@ class CodeSelectRenderer extends React.Component {
     }
   }
 
+  /** row click 이벤트와 select 클릭 충돌 방지 */
   handleMouseDown = (event) => {
     event.stopPropagation();
   };

@@ -1,3 +1,11 @@
+/**
+ * CodeSelect.jsx
+ *
+ * 공통 코드 선택 (select)
+ * options: [{ code, name }]
+ * onChange(value, event)
+ */
+
 import React from "react";
 
 function CodeSelect(props) {

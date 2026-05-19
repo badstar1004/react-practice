@@ -1,3 +1,10 @@
+/**
+ * issueSaga.js
+ *
+ * OwnerCodeInf API 비동기 처리 (redux-saga)
+ * takeLatest: 동일 요청 연속 시 마지막만 처리
+ */
+
 import { call, put, takeLatest } from "redux-saga/effects";
 
 import {
@@ -18,6 +25,7 @@ import {
   saveOwnerCodeRowsApi,
 } from "api/issueApi";
 
+/** Axios 에러 → 화면 표시용 객체 */
 function makeError(error) {
   const response = error && error.response ? error.response : null;
   const responseData = response && response.data ? response.data : null;

@@ -1,3 +1,15 @@
+/**
+ * issueReducer.js
+ *
+ * OwnerCodeInf 화면 Redux state
+ *
+ * ownerCodeList  - 그리드 목록
+ * usageCodeList  - 용도 콤보 옵션
+ * loading        - 조회/공통코드 로딩
+ * saving         - 저장 중
+ * error          - API 오류
+ */
+
 import {
   FETCH_OWNER_CODE_LIST_REQUEST,
   FETCH_OWNER_CODE_LIST_SUCCESS,
@@ -18,6 +30,7 @@ const initialState = {
   error: null,
 };
 
+/** 저장 성공 후 ownerCodeList에 변경분 반영 */
 const mergeSavedRows = (list, changedRows) => {
   if (!Array.isArray(changedRows) || changedRows.length === 0) {
     return list;
