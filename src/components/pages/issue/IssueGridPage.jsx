@@ -76,14 +76,6 @@ const normalizeValue = (value) => {
   return String(value).trim();
 };
 
-const toStringValue = (value) => {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value);
-};
-
 /** UsageCd 미설정 여부 */
 const isUnsetUsageRow = (row) => {
   return normalizeValue(row && row.usageCd) === "";
@@ -132,19 +124,6 @@ const normalizeCodeOptions = (codeList, fallbackList) => {
       name: getCodeName(item),
     };
   });
-};
-
-/** 코드값 → 표시명 */
-const findCodeName = (codeList, value) => {
-  if (!codeList || codeList.length === 0) {
-    return value || "-";
-  }
-
-  const found = codeList.find((item) => {
-    return toStringValue(item.code) === toStringValue(value);
-  });
-
-  return found ? found.name : value || "-";
 };
 
 /** 저장 API 요청 body 한 행 */
@@ -225,6 +204,30 @@ const IssueGridPage = () => {
   const originRowMapRef = useRef({});
   const gridApiRef = useRef(null);
 
+  /** 그리드·원본·수정 상태를 조회 결과 기준으로 한 번에 초기화 */
+  const resetGridFromRows = useCallback((rows) => {
+    const nextRows = cloneRows(rows);
+
+    setRowData(nextRows);
+    setChangedRowMap({});
+    setIsEditMode(false);
+    setEditSnapshotRowKeys(null);
+    originRowDataRef.current = cloneRows(nextRows);
+    originRowMapRef.current = createRowMap(nextRows);
+
+    return nextRows;
+  }, []);
+
+  /** 목록이 없을 때 그리드 비우기 */
+  const clearGrid = useCallback(() => {
+    setRowData([]);
+    setChangedRowMap({});
+    setIsEditMode(false);
+    setEditSnapshotRowKeys(null);
+    originRowDataRef.current = [];
+    originRowMapRef.current = {};
+  }, []);
+
   /** 최초 진입: 용도 공통코드 + 목록 조회 */
   useEffect(() => {
     dispatch(
@@ -242,23 +245,14 @@ const IssueGridPage = () => {
 
     if (nextRows.length === 0) {
       if (!USE_SAMPLE_DATA) {
-        setRowData([]);
-        setChangedRowMap({});
-        setIsEditMode(false);
-        originRowDataRef.current = [];
-        originRowMapRef.current = {};
+        clearGrid();
       }
 
       return;
     }
 
-    setRowData(nextRows);
-    setChangedRowMap({});
-    setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
-    originRowDataRef.current = cloneRows(nextRows);
-    originRowMapRef.current = createRowMap(nextRows);
-  }, [ownerCodeList]);
+    resetGridFromRows(nextRows);
+  }, [ownerCodeList, resetGridFromRows, clearGrid]);
 
   /** 샘플 데이터 (USE_SAMPLE_DATA && API 빈 목록) */
   useEffect(() => {
@@ -270,15 +264,8 @@ const IssueGridPage = () => {
       return;
     }
 
-    const sampleList = createSampleList();
-
-    setRowData(sampleList);
-    setChangedRowMap({});
-    setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
-    originRowDataRef.current = cloneRows(sampleList);
-    originRowMapRef.current = createRowMap(sampleList);
-  }, [ownerCodeList]);
+    resetGridFromRows(createSampleList());
+  }, [ownerCodeList, resetGridFromRows]);
 
   const changedRows = useMemo(() => {
     return Object.keys(changedRowMap).map((rowKey) => {
@@ -420,13 +407,8 @@ const IssueGridPage = () => {
 
   /** 마지막 검색 결과(originRowDataRef)로 복구 */
   const handleCancel = useCallback(() => {
-    const originRows = cloneRows(originRowDataRef.current);
-
-    setRowData(originRows);
-    setChangedRowMap({});
-    setEditSnapshotRowKeys(null);
-    setIsEditMode(false);
-  }, []);
+    resetGridFromRows(originRowDataRef.current);
+  }, [resetGridFromRows]);
 
   /** rowKey로 AG Grid RowNode 탐색 */
   const findRowNodeByKey = useCallback((api, rowKey) => {
@@ -571,9 +553,7 @@ const IssueGridPage = () => {
           field: "usageCd",
         },
         cellClass: getEditableCellClass(),
-        valueFormatter: (params) => {
-          return findCodeName(usageOptions, params.value);
-        },
+        /* 조회 모드 표시는 CodeSelectRenderer에서 처리 (valueFormatter 중복 제거) */
       },
     ];
   }, [isEditMode, usageOptions, getEditableCellClass]);
