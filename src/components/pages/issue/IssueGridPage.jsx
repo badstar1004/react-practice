@@ -196,8 +196,6 @@ const IssueGridPage = () => {
   /** { rowKey: 저장용 row } 변경 행 추적 */
   const [changedRowMap, setChangedRowMap] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
-  /** 용도없음 체크 후 수정 진입 시, 필터에서 빠지지 않도록 고정할 row key 목록 */
-  const [editSnapshotRowKeys, setEditSnapshotRowKeys] = useState(null);
 
   /** 마지막 조회(검색) 시점 원본 — 취소 시 복구 */
   const originRowDataRef = useRef([]);
@@ -211,7 +209,6 @@ const IssueGridPage = () => {
     setRowData(nextRows);
     setChangedRowMap({});
     setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
     originRowDataRef.current = cloneRows(nextRows);
     originRowMapRef.current = createRowMap(nextRows);
 
@@ -223,7 +220,6 @@ const IssueGridPage = () => {
     setRowData([]);
     setChangedRowMap({});
     setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
     originRowDataRef.current = [];
     originRowMapRef.current = {};
   }, []);
@@ -275,35 +271,12 @@ const IssueGridPage = () => {
 
   /**
    * AG Grid에 넘길 rowData
-   * - 수정+스냅샷: 수정 진입 시 행 고정 (용도 선택해도 목록에서 사라지지 않음)
-   * - 용도없음 체크: UsageCd 빈 행만 표시
+   * - 조회조건은 조회 버튼으로 API 조회 시 반영
+   * - 화면에서는 별도 noUsage 로컬 필터링 없이 조회 결과 그대로 표시
    */
   const displayRowData = useMemo(() => {
-    if (isEditMode && editSnapshotRowKeys && editSnapshotRowKeys.length > 0) {
-      const keySet = {};
-
-      editSnapshotRowKeys.forEach((rowKey) => {
-        keySet[rowKey] = true;
-      });
-
-      return rowData.filter((row) => {
-        return keySet[getRowKey(row)];
-      });
-    }
-
-    if (!rscOwnerCodeSearchForm.item.noUsage) {
-      return rowData;
-    }
-
-    return rowData.filter((row) => {
-      return isUnsetUsageRow(row);
-    });
-  }, [
-    rowData,
-    rscOwnerCodeSearchForm.item.noUsage,
-    isEditMode,
-    editSnapshotRowKeys,
-  ]);
+    return rowData;
+  }, [rowData]);
 
   /**
    * 그리드 셀에서 용도 변경 시 호출 (CodeSelectRenderer → context)
@@ -387,23 +360,9 @@ const IssueGridPage = () => {
   }, [dispatch, resetSearchForm]);
 
   const handleEdit = useCallback(() => {
-    if (rscOwnerCodeSearchForm.item.noUsage) {
-      const snapshotKeys = rowData
-        .filter((row) => {
-          return isUnsetUsageRow(row);
-        })
-        .map((row) => {
-          return getRowKey(row);
-        });
-
-      setEditSnapshotRowKeys(snapshotKeys);
-    } else {
-      setEditSnapshotRowKeys(null);
-    }
-
     setChangedRowMap({});
     setIsEditMode(true);
-  }, [rowData, rscOwnerCodeSearchForm.item.noUsage]);
+  }, []);
 
   /** 마지막 검색 결과(originRowDataRef)로 복구 */
   const handleCancel = useCallback(() => {
