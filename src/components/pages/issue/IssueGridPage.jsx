@@ -241,21 +241,19 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      if (rowNode.rowIndex === null || rowNode.rowIndex < 0) {
-        return;
-      }
+    if (rowNode.rowIndex === null || rowNode.rowIndex < 0) {
+      return;
+    }
 
-      if (api.deselectAll) {
-        api.deselectAll();
-      }
+    if (api.deselectAll) {
+      api.deselectAll();
+    }
 
-      if (rowNode.setSelected) {
-        rowNode.setSelected(true);
-      }
+    if (rowNode.setSelected) {
+      rowNode.setSelected(true);
+    }
 
-      api.ensureIndexVisible(rowNode.rowIndex, "middle");
-    }, 200);
+    api.ensureIndexVisible(rowNode.rowIndex, "middle");
   }, []);
 
   const validateUsageOnSave = useCallback(() => {
@@ -341,12 +339,10 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      api.refreshCells({
-        force: true,
-        columns: ["usageCd"],
-      });
-    }, 0);
+    api.refreshCells({
+      force: true,
+      columns: ["usageCd"],
+    });
   }, [isEditMode]);
 
   const searchFormDisabled = listLoading || isEditMode;
