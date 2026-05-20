@@ -271,8 +271,8 @@ const IssueGridPage = () => {
 
   /**
    * AG Grid에 넘길 rowData
-   * - 조회 조건은 조회 버튼 클릭 시점의 API 응답으로만 반영
-   * - 화면에서는 별도 "용도없음(noUsage)" 로컬 필터링 없이 조회 결과를 그대로 표시
+   * - 조회조건은 조회 버튼으로 API 조회 시 반영
+   * - 화면에서는 별도 "용도없음(noUsage)" 로컬 필터링 없이 조회 결과 그대로 표시
    */
   const displayRowData = useMemo(() => {
     return rowData;
