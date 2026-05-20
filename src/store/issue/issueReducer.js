@@ -2,21 +2,14 @@
  * issueReducer.js
  *
  * OwnerCodeInf 화면 Redux state
- *
- * ownerCodeList  - 그리드 목록
- * usageCodeList  - 용도 콤보 옵션
- * loading        - 조회/공통코드 로딩
- * saving         - 저장 중
- * error          - API 오류
  */
+
+import { mergeSavedRows } from "utils/ownerCode";
 
 import {
   FETCH_OWNER_CODE_LIST_REQUEST,
   FETCH_OWNER_CODE_LIST_SUCCESS,
   FETCH_OWNER_CODE_LIST_FAILURE,
-  FETCH_COMMON_CODE_REQUEST,
-  FETCH_COMMON_CODE_SUCCESS,
-  FETCH_COMMON_CODE_FAILURE,
   SAVE_OWNER_CODE_ROWS_REQUEST,
   SAVE_OWNER_CODE_ROWS_SUCCESS,
   SAVE_OWNER_CODE_ROWS_FAILURE,
@@ -24,70 +17,32 @@ import {
 
 const initialState = {
   ownerCodeList: [],
-  usageCodeList: [],
-  loading: false,
+  listLoading: false,
   saving: false,
   error: null,
 };
 
-/** 저장 성공 후 ownerCodeList에 변경분 반영 */
-const mergeSavedRows = (list, changedRows) => {
-  if (!Array.isArray(changedRows) || changedRows.length === 0) {
-    return list;
-  }
-
-  const changedMap = changedRows.reduce((acc, row) => {
-    const key = `${row.workAreaCd}|${row.ownerCd}`;
-    acc[key] = row;
-    return acc;
-  }, {});
-
-  return list.map((row) => {
-    const key = `${row.workAreaCd}|${row.ownerCd}`;
-    return changedMap[key] ? { ...row, ...changedMap[key] } : row;
-  });
-};
-
 export default function issueReducer(
   state = initialState,
-  { type, payload, data, changedRows, error } = {},
+  { type, data, changedRows, error } = {},
 ) {
   switch (type) {
     case FETCH_OWNER_CODE_LIST_REQUEST:
       return {
         ...state,
-        loading: true,
+        listLoading: true,
         error: null,
       };
     case FETCH_OWNER_CODE_LIST_SUCCESS:
       return {
         ...state,
-        loading: false,
+        listLoading: false,
         ownerCodeList: data || [],
       };
     case FETCH_OWNER_CODE_LIST_FAILURE:
       return {
         ...state,
-        loading: false,
-        error,
-      };
-
-    case FETCH_COMMON_CODE_REQUEST:
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      };
-    case FETCH_COMMON_CODE_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        usageCodeList: data && data.usageCodeList ? data.usageCodeList : [],
-      };
-    case FETCH_COMMON_CODE_FAILURE:
-      return {
-        ...state,
-        loading: false,
+        listLoading: false,
         error,
       };
 

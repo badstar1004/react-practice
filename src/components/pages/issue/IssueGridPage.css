@@ -10,3 +10,80 @@
   color: #374151;
   font-weight: 700;
 }
+
+.owner-code-page .issue-search-box {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #dce3ee;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.owner-code-page .issue-search-box__title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.owner-code-page .issue-search-box__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.owner-code-page .issue-search-box__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.owner-code-page .issue-search-box__buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding-bottom: 6px;
+}
+
+.owner-code-page .search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.owner-code-page .search-field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  min-width: auto;
+  padding-bottom: 6px;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.owner-code-page .search-field__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.owner-code-page .search-field__checkbox-label {
+  font-size: 14px;
+  color: #374151;
+}
+
+.owner-code-page .search-field__control {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.owner-code-page .search-field__control--select {
+  width: 100%;
+  min-width: 220px;
+}

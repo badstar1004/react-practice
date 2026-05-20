@@ -9,7 +9,9 @@
       "context/*": ["context/*"],
       "hooks/*": ["hooks/*"],
       "assets/*": ["assets/*"],
-      "utils/*": ["utils/*"]
+      "utils/*": ["utils/*"],
+      "i18n": ["i18n/index.js"],
+      "i18n/*": ["i18n/*"]
     },
     "checkJs": false,
     "jsx": "react"
