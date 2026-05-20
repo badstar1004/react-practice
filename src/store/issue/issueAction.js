@@ -44,11 +44,10 @@ export const saveOwnerCodeRowsRequest = function (payload) {
   };
 };
 
-export const saveOwnerCodeRowsSuccess = function (data, changedRows) {
+export const saveOwnerCodeRowsSuccess = function (data) {
   return {
     type: SAVE_OWNER_CODE_ROWS_SUCCESS,
     data,
-    changedRows,
   };
 };
 

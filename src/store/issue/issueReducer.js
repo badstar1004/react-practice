@@ -4,8 +4,6 @@
  * OwnerCodeInf 화면 Redux state
  */
 
-import { mergeSavedRows } from "utils/ownerCode";
-
 import {
   FETCH_OWNER_CODE_LIST_REQUEST,
   FETCH_OWNER_CODE_LIST_SUCCESS,
@@ -24,7 +22,7 @@ const initialState = {
 
 export default function issueReducer(
   state = initialState,
-  { type, data, changedRows, error } = {},
+  { type, data, error } = {},
 ) {
   switch (type) {
     case FETCH_OWNER_CODE_LIST_REQUEST:
@@ -56,7 +54,6 @@ export default function issueReducer(
       return {
         ...state,
         saving: false,
-        ownerCodeList: mergeSavedRows(state.ownerCodeList, changedRows),
         error: null,
       };
     case SAVE_OWNER_CODE_ROWS_FAILURE:

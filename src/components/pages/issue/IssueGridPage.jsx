@@ -325,16 +325,15 @@ const IssueGridPage = () => {
 
   useEffect(() => {
     if (prevSavingRef.current && !saving && !issueError) {
-      setIsEditMode(false);
-      setChangedRowMap({});
       setNotice({
         type: "success",
         message: t(I18N_KEYS.SAVE_SUCCESS, "저장되었습니다."),
       });
+      dispatch(fetchOwnerCodeListRequest(searchForm.item));
     }
 
     prevSavingRef.current = saving;
-  }, [saving, issueError, t]);
+  }, [dispatch, saving, issueError, searchForm.item, t]);
 
   useEffect(() => {
     const api = gridRef.current && gridRef.current.api;

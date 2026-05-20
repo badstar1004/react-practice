@@ -33,7 +33,7 @@ function* fetchOwnerCodeListSaga({ payload }) {
 function* saveOwnerCodeRowsSaga({ payload }) {
   try {
     const response = yield call(saveOwnerCodeRowsApi, payload);
-    yield put(saveOwnerCodeRowsSuccess(response.data, payload));
+    yield put(saveOwnerCodeRowsSuccess(response.data));
   } catch (error) {
     yield put(saveOwnerCodeRowsFailure(makeApiError(error)));
   }
