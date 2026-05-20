@@ -198,42 +198,40 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      setChangedRowMap((prevMap) => {
-        const prevChangedRow = prevMap[ownerCd];
+    setChangedRowMap((prevMap) => {
+      const prevChangedRow = prevMap[ownerCd];
 
-        const mergedRow = {
-          ...originRow,
-          ...prevChangedRow,
-          ...changedRow,
-          [field]: value,
-        };
+      const mergedRow = {
+        ...originRow,
+        ...prevChangedRow,
+        ...changedRow,
+        [field]: value,
+      };
 
-        const isChanged = isEditableFieldChanged(originRow, mergedRow);
-        const nextMap = { ...prevMap };
+      const isChanged = isEditableFieldChanged(originRow, mergedRow);
+      const nextMap = { ...prevMap };
 
-        if (!isChanged) {
-          delete nextMap[ownerCd];
-          return nextMap;
+      if (!isChanged) {
+        delete nextMap[ownerCd];
+        return nextMap;
+      }
+
+      nextMap[ownerCd] = toSaveRow(mergedRow);
+      return nextMap;
+    });
+
+    setRowData((prevRows) => {
+      return prevRows.map((row) => {
+        if (!isSameRow(row, changedRow)) {
+          return row;
         }
 
-        nextMap[ownerCd] = toSaveRow(mergedRow);
-        return nextMap;
+        return {
+          ...row,
+          [field]: value,
+        };
       });
-
-      setRowData((prevRows) => {
-        return prevRows.map((row) => {
-          if (!isSameRow(row, changedRow)) {
-            return row;
-          }
-
-          return {
-            ...row,
-            [field]: value,
-          };
-        });
-      });
-    }, 0);
+    });
   }, []);
 
   const selectGridRowNode = useCallback((rowNode) => {
@@ -428,9 +426,7 @@ const IssueGridPage = () => {
           props.node.setDataValue(field, nextValue);
 
           if (props.onUsageChange) {
-            window.setTimeout(() => {
-              props.onUsageChange(updatedRow, field, nextValue);
-            }, 0);
+            props.onUsageChange(updatedRow, field, nextValue);
           }
         },
         [props],
