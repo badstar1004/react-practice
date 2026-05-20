@@ -196,13 +196,11 @@ const IssueGridPage = () => {
   /** { rowKey: 저장용 row } 변경 행 추적 */
   const [changedRowMap, setChangedRowMap] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
-  /** 용도없음 체크 후 수정 진입 시, 필터에서 빠지지 않도록 고정할 row key 목록 */
-  const [editSnapshotRowKeys, setEditSnapshotRowKeys] = useState(null);
 
   /** 마지막 조회(검색) 시점 원본 — 취소 시 복구 */
   const originRowDataRef = useRef([]);
   const originRowMapRef = useRef({});
-  const gridApiRef = useRef(null);
+  const gridRef = useRef(null);
 
   /** 그리드·원본·수정 상태를 조회 결과 기준으로 한 번에 초기화 */
   const resetGridFromRows = useCallback((rows) => {
@@ -211,7 +209,6 @@ const IssueGridPage = () => {
     setRowData(nextRows);
     setChangedRowMap({});
     setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
     originRowDataRef.current = cloneRows(nextRows);
     originRowMapRef.current = createRowMap(nextRows);
 
@@ -223,7 +220,6 @@ const IssueGridPage = () => {
     setRowData([]);
     setChangedRowMap({});
     setIsEditMode(false);
-    setEditSnapshotRowKeys(null);
     originRowDataRef.current = [];
     originRowMapRef.current = {};
   }, []);
@@ -275,35 +271,12 @@ const IssueGridPage = () => {
 
   /**
    * AG Grid에 넘길 rowData
-   * - 수정+스냅샷: 수정 진입 시 행 고정 (용도 선택해도 목록에서 사라지지 않음)
-   * - 용도없음 체크: UsageCd 빈 행만 표시
+   * - 조회 조건은 조회 버튼 클릭 시점의 API 응답으로만 반영
+   * - 화면에서는 별도 "용도없음(noUsage)" 로컬 필터링 없이 조회 결과를 그대로 표시
    */
   const displayRowData = useMemo(() => {
-    if (isEditMode && editSnapshotRowKeys && editSnapshotRowKeys.length > 0) {
-      const keySet = {};
-
-      editSnapshotRowKeys.forEach((rowKey) => {
-        keySet[rowKey] = true;
-      });
-
-      return rowData.filter((row) => {
-        return keySet[getRowKey(row)];
-      });
-    }
-
-    if (!rscOwnerCodeSearchForm.item.noUsage) {
-      return rowData;
-    }
-
-    return rowData.filter((row) => {
-      return isUnsetUsageRow(row);
-    });
-  }, [
-    rowData,
-    rscOwnerCodeSearchForm.item.noUsage,
-    isEditMode,
-    editSnapshotRowKeys,
-  ]);
+    return rowData;
+  }, [rowData]);
 
   /**
    * 그리드 셀에서 용도 변경 시 호출 (CodeSelectRenderer → context)
@@ -366,10 +339,6 @@ const IssueGridPage = () => {
     };
   }, [addChangedRow]);
 
-  const handleGridReady = useCallback((params) => {
-    gridApiRef.current = params.api;
-  }, []);
-
   const handleChangeSearchField = useCallback(
     (name, value) => {
       setSearchFormField(name, value);
@@ -387,23 +356,9 @@ const IssueGridPage = () => {
   }, [dispatch, resetSearchForm]);
 
   const handleEdit = useCallback(() => {
-    if (rscOwnerCodeSearchForm.item.noUsage) {
-      const snapshotKeys = rowData
-        .filter((row) => {
-          return isUnsetUsageRow(row);
-        })
-        .map((row) => {
-          return getRowKey(row);
-        });
-
-      setEditSnapshotRowKeys(snapshotKeys);
-    } else {
-      setEditSnapshotRowKeys(null);
-    }
-
     setChangedRowMap({});
     setIsEditMode(true);
-  }, [rowData, rscOwnerCodeSearchForm.item.noUsage]);
+  }, []);
 
   /** 마지막 검색 결과(originRowDataRef)로 복구 */
   const handleCancel = useCallback(() => {
@@ -434,7 +389,7 @@ const IssueGridPage = () => {
   /** 저장 검증 실패 시 해당 행 선택·스크롤 */
   const selectUsageRow = useCallback(
     (row) => {
-      const api = gridApiRef.current;
+      const api = gridRef.current && gridRef.current.api;
 
       if (!api || !row) {
         return;
@@ -504,7 +459,6 @@ const IssueGridPage = () => {
     if (prevSavingRef.current && !saving && !error) {
       setIsEditMode(false);
       setChangedRowMap({});
-      setEditSnapshotRowKeys(null);
       alert("저장되었습니다.");
     }
 
@@ -513,7 +467,7 @@ const IssueGridPage = () => {
 
   /** 수정 모드 전환 시 용도 컬럼 셀 리프레시 (조회↔편집 UI) */
   useEffect(() => {
-    const api = gridApiRef.current;
+    const api = gridRef.current && gridRef.current.api;
 
     if (!api) {
       return;
@@ -640,11 +594,11 @@ const IssueGridPage = () => {
       >
         <div className="ag-theme-balham issue-grid">
           <AgGridReact
+            ref={gridRef}
             rowData={displayRowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             context={gridContext}
-            onGridReady={handleGridReady}
             immutableData={true}
             rowSelection="single"
             suppressRowClickSelection={true}
