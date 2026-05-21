@@ -198,42 +198,40 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      setChangedRowMap((prevMap) => {
-        const prevChangedRow = prevMap[ownerCd];
+    setChangedRowMap((prevMap) => {
+      const prevChangedRow = prevMap[ownerCd];
 
-        const mergedRow = {
-          ...originRow,
-          ...prevChangedRow,
-          ...changedRow,
-          [field]: value,
-        };
+      const mergedRow = {
+        ...originRow,
+        ...prevChangedRow,
+        ...changedRow,
+        [field]: value,
+      };
 
-        const isChanged = isEditableFieldChanged(originRow, mergedRow);
-        const nextMap = { ...prevMap };
+      const isChanged = isEditableFieldChanged(originRow, mergedRow);
+      const nextMap = { ...prevMap };
 
-        if (!isChanged) {
-          delete nextMap[ownerCd];
-          return nextMap;
+      if (!isChanged) {
+        delete nextMap[ownerCd];
+        return nextMap;
+      }
+
+      nextMap[ownerCd] = toSaveRow(mergedRow);
+      return nextMap;
+    });
+
+    setRowData((prevRows) => {
+      return prevRows.map((row) => {
+        if (!isSameRow(row, changedRow)) {
+          return row;
         }
 
-        nextMap[ownerCd] = toSaveRow(mergedRow);
-        return nextMap;
+        return {
+          ...row,
+          [field]: value,
+        };
       });
-
-      setRowData((prevRows) => {
-        return prevRows.map((row) => {
-          if (!isSameRow(row, changedRow)) {
-            return row;
-          }
-
-          return {
-            ...row,
-            [field]: value,
-          };
-        });
-      });
-    }, 0);
+    });
   }, []);
 
   const selectGridRowNode = useCallback((rowNode) => {
@@ -243,21 +241,19 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      if (rowNode.rowIndex === null || rowNode.rowIndex < 0) {
-        return;
-      }
+    if (rowNode.rowIndex === null || rowNode.rowIndex < 0) {
+      return;
+    }
 
-      if (api.deselectAll) {
-        api.deselectAll();
-      }
+    if (api.deselectAll) {
+      api.deselectAll();
+    }
 
-      if (rowNode.setSelected) {
-        rowNode.setSelected(true);
-      }
+    if (rowNode.setSelected) {
+      rowNode.setSelected(true);
+    }
 
-      api.ensureIndexVisible(rowNode.rowIndex, "middle");
-    }, 200);
+    api.ensureIndexVisible(rowNode.rowIndex, "middle");
   }, []);
 
   const validateUsageOnSave = useCallback(() => {
@@ -343,12 +339,10 @@ const IssueGridPage = () => {
       return;
     }
 
-    window.setTimeout(() => {
-      api.refreshCells({
-        force: true,
-        columns: ["usageCd"],
-      });
-    }, 0);
+    api.refreshCells({
+      force: true,
+      columns: ["usageCd"],
+    });
   }, [isEditMode]);
 
   const searchFormDisabled = listLoading || isEditMode;
@@ -428,9 +422,7 @@ const IssueGridPage = () => {
           props.node.setDataValue(field, nextValue);
 
           if (props.onUsageChange) {
-            window.setTimeout(() => {
-              props.onUsageChange(updatedRow, field, nextValue);
-            }, 0);
+            props.onUsageChange(updatedRow, field, nextValue);
           }
         },
         [props],
