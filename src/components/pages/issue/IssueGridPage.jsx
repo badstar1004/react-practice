@@ -138,24 +138,6 @@ const IssueGridPage = () => {
     setNotice(null);
   }, []);
 
-  const resetGridFromRows = useCallback((rows) => {
-    const nextRows = cloneRows(rows);
-
-    setRowData(nextRows);
-    setChangedRowMap({});
-    setIsEditMode(false);
-    originRowDataRef.current = cloneRows(nextRows);
-
-    return nextRows;
-  }, []);
-
-  const clearGrid = useCallback(() => {
-    setRowData([]);
-    setChangedRowMap({});
-    setIsEditMode(false);
-    originRowDataRef.current = [];
-  }, []);
-
   useEffect(() => {
     dispatch(
       fetchCommonCodeRequest({
@@ -166,20 +148,32 @@ const IssueGridPage = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    const applyRows = (rows) => {
+      const nextRows = cloneRows(rows);
+
+      setRowData(nextRows);
+      setChangedRowMap({});
+      setIsEditMode(false);
+      originRowDataRef.current = cloneRows(nextRows);
+    };
+
     const nextRows = cloneRows(ownerCodeList);
 
     if (nextRows.length > 0) {
-      resetGridFromRows(nextRows);
+      applyRows(nextRows);
       return;
     }
 
     if (USE_SAMPLE_DATA) {
-      resetGridFromRows(createSampleList());
+      applyRows(createSampleList());
       return;
     }
 
-    clearGrid();
-  }, [ownerCodeList, resetGridFromRows, clearGrid]);
+    setRowData([]);
+    setChangedRowMap({});
+    setIsEditMode(false);
+    originRowDataRef.current = [];
+  }, [ownerCodeList]);
 
   const changedRows = useMemo(() => {
     return Object.values(changedRowMap);
