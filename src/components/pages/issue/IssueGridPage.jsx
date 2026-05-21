@@ -450,11 +450,33 @@ const IssueGridPage = () => {
       const editable = props.editable === true;
 
       if (!editable) {
-        return <span>{findCodeName(options, value)}</span>;
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            {findCodeName(options, value)}
+          </div>
+        );
       }
 
       return (
-        <div onMouseDown={handleMouseDown} onClick={handleClick}>
+        <div
+          onMouseDown={handleMouseDown}
+          onClick={handleClick}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
           <CodeSelect
             value={value}
             options={options}
@@ -491,9 +513,20 @@ const IssueGridPage = () => {
           field: "usageCd",
           onUsageChange: addChangedRow,
         },
-        cellClass: isEditMode
-          ? "editable-cell grid-cell-center"
-          : "grid-cell-center",
+        cellStyle: isEditMode
+          ? {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              backgroundColor: "#fff4cc",
+            }
+          : {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            },
       },
     ];
   }, [

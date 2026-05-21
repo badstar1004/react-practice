@@ -148,10 +148,6 @@ select {
   font-weight: 700;
 }
 
-.grid-cell-center {
-  text-align: center;
-}
-
 .error-box {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -160,18 +156,6 @@ select {
   padding: 12px 14px;
   margin-bottom: 12px;
   font-size: 14px;
-}
-
-.editable-cell {
-  background-color: #fff4cc !important;
-}
-
-.editable-cell select {
-  font-size: 13px;
-}
-
-.grid-cell-center {
-  text-align: center;
 }
 
 .grid-select {
@@ -183,12 +167,4 @@ select {
   background: #fff;
   box-sizing: border-box;
   font-size: 13px;
-}
-
-.editable-cell {
-  background-color: #fff4cc !important;
-}
-
-.grid-cell-center {
-  text-align: center;
 }
