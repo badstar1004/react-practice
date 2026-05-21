@@ -111,20 +111,6 @@ export const toSaveRow = (row) => {
   };
 };
 
-export const mergeSavedRows = (list, changedRows) => {
-  if (!Array.isArray(changedRows) || changedRows.length === 0) {
-    return list;
-  }
-
-  return list.map((row) => {
-    const changed = changedRows.find((item) => {
-      return isSameRow(item, row);
-    });
-
-    return changed ? { ...row, ...changed } : row;
-  });
-};
-
 /** API 연동 전 그리드 테스트용 샘플 */
 export const createSampleList = () => {
   return [
