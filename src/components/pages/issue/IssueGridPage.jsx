@@ -414,14 +414,6 @@ const IssueGridPage = () => {
         setValue(props.value || "");
       }, [props.value]);
 
-      const handleMouseDown = useCallback((event) => {
-        event.stopPropagation();
-      }, []);
-
-      const handleClick = useCallback((event) => {
-        event.stopPropagation();
-      }, []);
-
       const handleChange = useCallback(
         (nextValue, event) => {
           if (event) {
@@ -460,11 +452,7 @@ const IssueGridPage = () => {
       };
 
       return (
-        <div
-          style={cellWrapStyle}
-          onMouseDown={editable ? handleMouseDown : undefined}
-          onClick={editable ? handleClick : undefined}
-        >
+        <div style={cellWrapStyle}>
           {editable ? (
             <CodeSelect
               value={value}
