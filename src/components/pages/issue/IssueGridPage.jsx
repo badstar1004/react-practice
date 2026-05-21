@@ -448,44 +448,29 @@ const IssueGridPage = () => {
 
       const options = props.options || [];
       const editable = props.editable === true;
-
-      if (!editable) {
-        return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            {findCodeName(options, value)}
-          </div>
-        );
-      }
+      const cellClassName = editable
+        ? "usage-grid-cell usage-grid-cell--edit"
+        : "usage-grid-cell";
 
       return (
         <div
-          onMouseDown={handleMouseDown}
-          onClick={handleClick}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
-          }}
+          className={cellClassName}
+          onMouseDown={editable ? handleMouseDown : undefined}
+          onClick={editable ? handleClick : undefined}
         >
-          <CodeSelect
-            value={value}
-            options={options}
-            placeholder={
-              props.placeholder || props.selectDefaultLabel || "선택하세요."
-            }
-            onChange={handleChange}
-            className="grid-select"
-          />
+          {editable ? (
+            <CodeSelect
+              value={value}
+              options={options}
+              placeholder={
+                props.placeholder || props.selectDefaultLabel || "선택하세요."
+              }
+              onChange={handleChange}
+              className="grid-select"
+            />
+          ) : (
+            findCodeName(options, value)
+          )}
         </div>
       );
     });
@@ -513,20 +498,6 @@ const IssueGridPage = () => {
           field: "usageCd",
           onUsageChange: addChangedRow,
         },
-        cellStyle: isEditMode
-          ? {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              backgroundColor: "#fff4cc",
-            }
-          : {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-            },
       },
     ];
   }, [
