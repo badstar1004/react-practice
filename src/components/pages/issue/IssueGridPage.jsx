@@ -29,8 +29,12 @@ import {
 
 import Header from "components/common/Header";
 import PageNotice from "components/common/PageNotice";
-import FormItem from "components/common/FormItem";
 import CodeSelect from "components/common/CodeSelect";
+import IssueSearchCondition from "components/pages/issue/IssueSearchCondition";
+import {
+  OWNER_CODE_SEARCH_INITIAL_ITEM,
+  createSearchConditionModel,
+} from "components/pages/issue/issueSearchConditionModel";
 import {
   AG_GRID_DEFAULT_COL_DEF,
   cloneRows,
@@ -48,14 +52,6 @@ import { I18N_KEYS } from "i18n/keys";
 import { tSelectPlaceholderByLabelKey } from "i18n/helpers";
 
 import "./IssueGridPage.css";
-
-/* ----- 조회조건 초기값 ----- */
-
-const OWNER_CODE_SEARCH_INITIAL_ITEM = {
-  ownerCd: "",
-  usageCd: "",
-  noUsage: false,
-};
 
 const IssueGridPage = () => {
   const { t } = useTranslation();
@@ -346,21 +342,42 @@ const IssueGridPage = () => {
 
   const searchFormDisabled = listLoading || isEditMode;
 
-  const handleSearchFormSubmit = (event) => {
-    event.preventDefault();
-    clearNotice();
-    dispatch(fetchOwnerCodeListRequest(searchForm.item));
-  };
+  const handleSearchFormSubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+      clearNotice();
+      dispatch(fetchOwnerCodeListRequest(searchForm.item));
+    },
+    [clearNotice, dispatch, searchForm.item],
+  );
 
-  const handleUsageSearchChange = (value) => {
-    setSearchFormField("usageCd", value);
-  };
-
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     clearNotice();
     resetSearchForm();
     dispatch(fetchOwnerCodeListRequest(OWNER_CODE_SEARCH_INITIAL_ITEM));
-  };
+  }, [clearNotice, dispatch, resetSearchForm]);
+
+  const model = useMemo(() => {
+    return createSearchConditionModel({
+      t,
+      item: searchForm.item,
+      disabled: searchFormDisabled,
+      usageOptions,
+      usageSelectPlaceholder,
+      onFieldChange: setSearchFormField,
+      onSubmit: handleSearchFormSubmit,
+      onReset: handleReset,
+    });
+  }, [
+    t,
+    searchForm.item,
+    searchFormDisabled,
+    usageOptions,
+    usageSelectPlaceholder,
+    setSearchFormField,
+    handleSearchFormSubmit,
+    handleReset,
+  ]);
 
   /** AG Grid 용도 컬럼 셀 렌더러 (페이지 내부, 참조 고정) */
   const CodeSelectRenderer = useMemo(() => {
@@ -533,84 +550,9 @@ const IssueGridPage = () => {
     </>
   );
 
-  const { item: searchItem } = searchForm;
-
   return (
     <div className="page owner-code-page">
-      <section className="issue-search-box">
-        <div className="issue-search-box__title">
-          {t(I18N_KEYS.SEARCH_CONDITION, "조회조건")}
-        </div>
-
-        <form
-          className="issue-search-box__form"
-          onSubmit={handleSearchFormSubmit}
-        >
-          <div className="issue-search-box__row">
-            <FormItem
-              label={t(I18N_KEYS.OWNER_CODE, "owner code")}
-              name="ownerCd"
-              value={searchItem.ownerCd}
-              onChange={setSearchFormField}
-              disabled={searchFormDisabled}
-            >
-              <input
-                type="text"
-                className="search-field__control"
-                placeholder={t(
-                  I18N_KEYS.OWNER_CODE_PLACEHOLDER,
-                  "owner code (영문·숫자)",
-                )}
-              />
-            </FormItem>
-
-            <div className="search-field">
-              <label className="search-field__label" htmlFor="usageCd">
-                {t(I18N_KEYS.USAGE, "용도")}
-              </label>
-              <CodeSelect
-                name="usageCd"
-                value={searchItem.usageCd}
-                options={usageOptions}
-                placeholder={usageSelectPlaceholder}
-                onChange={handleUsageSearchChange}
-                disabled={searchFormDisabled}
-                className="search-field__control search-field__control--select"
-              />
-            </div>
-
-            <FormItem
-              label={t(I18N_KEYS.NO_USAGE, "용도없음")}
-              name="noUsage"
-              value={searchItem.noUsage}
-              onChange={setSearchFormField}
-              disabled={searchFormDisabled}
-              className="search-field search-field--checkbox"
-            >
-              <input type="checkbox" />
-            </FormItem>
-
-            <div className="issue-search-box__buttons">
-              <button
-                type="button"
-                className="btn btn-gray"
-                onClick={handleReset}
-                disabled={searchFormDisabled}
-              >
-                {t(I18N_KEYS.RESET, "초기화")}
-              </button>
-
-              <button
-                type="submit"
-                className="btn btn-blue"
-                disabled={searchFormDisabled}
-              >
-                {t(I18N_KEYS.SEARCH, "검색")}
-              </button>
-            </div>
-          </div>
-        </form>
-      </section>
+      <IssueSearchCondition model={model} />
 
       <PageNotice notice={notice} onDismiss={clearNotice} />
 
