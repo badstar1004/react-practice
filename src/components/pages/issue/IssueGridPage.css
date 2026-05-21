@@ -4,20 +4,6 @@
   min-height: 300px;
 }
 
-.owner-code-page .usage-grid-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.owner-code-page .usage-grid-cell--edit {
-  background-color: #fff4cc;
-}
-
 .owner-code-page .changed-count {
   margin-right: 8px;
   font-size: 13px;

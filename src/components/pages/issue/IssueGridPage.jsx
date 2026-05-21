@@ -448,13 +448,20 @@ const IssueGridPage = () => {
 
       const options = props.options || [];
       const editable = props.editable === true;
-      const cellClassName = editable
-        ? "usage-grid-cell usage-grid-cell--edit"
-        : "usage-grid-cell";
+      const cellWrapStyle = {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
+        textAlign: "center",
+        ...(editable ? { backgroundColor: "#fff4cc" } : {}),
+      };
 
       return (
         <div
-          className={cellClassName}
+          style={cellWrapStyle}
           onMouseDown={editable ? handleMouseDown : undefined}
           onClick={editable ? handleClick : undefined}
         >
