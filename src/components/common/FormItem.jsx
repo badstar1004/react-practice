@@ -1,11 +1,12 @@
 /**
  * FormItem.jsx
  *
- * 조회 form 필드 래퍼 — label + control
- * children에 input/select를 넣고 value, onChange(name, value)로 form item과 연결
+ * Form 하위 필드 — value/onChange는 Form Context에서 연결
  */
 
 import React from "react";
+
+import { useFormContext } from "./Form";
 
 const FormItem = ({
   label,
@@ -16,28 +17,44 @@ const FormItem = ({
   className,
   children,
 }) => {
+  const formContext = useFormContext();
   const child = React.Children.only(children);
   const isCheckbox = child.props && child.props.type === "checkbox";
 
+  const fieldValue =
+    formContext && formContext.values
+      ? formContext.values[name]
+      : value;
+
+  const fieldDisabled =
+    disabled !== undefined && disabled !== null
+      ? disabled
+      : formContext
+        ? formContext.disabled
+        : disabled;
+
   const handleChange = (event) => {
-    if (!onChange) {
+    const nextValue = isCheckbox ? event.target.checked : event.target.value;
+
+    if (formContext && formContext.onFieldChange) {
+      formContext.onFieldChange(name, nextValue);
       return;
     }
 
-    const nextValue = isCheckbox ? event.target.checked : event.target.value;
-
-    onChange(name, nextValue);
+    if (onChange) {
+      onChange(name, nextValue);
+    }
   };
 
   const controlProps = {
     id: name,
     name: name,
-    disabled: disabled,
+    disabled: fieldDisabled,
     onChange: handleChange,
   };
 
   if (isCheckbox) {
-    controlProps.checked = Boolean(value);
+    controlProps.checked = Boolean(fieldValue);
 
     return (
       <label
@@ -50,7 +67,7 @@ const FormItem = ({
   }
 
   controlProps.value =
-    value === null || value === undefined ? "" : value;
+    fieldValue === null || fieldValue === undefined ? "" : fieldValue;
 
   return (
     <div className={className || "search-field"}>
