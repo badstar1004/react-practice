@@ -52,7 +52,7 @@ import { tSelectPlaceholderByLabelKey } from "i18n/helpers";
 
 import "./IssueGridPage.css";
 
-const OWNER_CODE_SEARCH_INITIAL_ITEM = {
+const initSearchConditions = {
   ownerCd: "",
   usageCd: "",
   noUsage: false,
@@ -76,32 +76,20 @@ const IssueGridPage = () => {
   const issueError = issueState.error || null;
   const commonCodeError = commonCodeState.error || null;
 
-  /* ----- 조회조건 form ----- */
-  const [searchForm, setSearchForm] = useState({
-    item: { ...OWNER_CODE_SEARCH_INITIAL_ITEM },
-    initialItem: { ...OWNER_CODE_SEARCH_INITIAL_ITEM },
+  /* ----- 조회조건 ----- */
+  const [formValues, setFormValues] = useState({ ...initSearchConditions });
+  const [searchConditions, setSearchConditions] = useState({
+    ...initSearchConditions,
   });
 
-  const setSearchFormField = useCallback((name, value) => {
+  const setFormField = useCallback((name, value) => {
     const nextValue =
       name === "ownerCd" ? normalizeOwnerCdInput(value) : value;
 
-    setSearchForm((prev) => {
+    setFormValues((prev) => {
       return {
         ...prev,
-        item: {
-          ...prev.item,
-          [name]: nextValue,
-        },
-      };
-    });
-  }, []);
-
-  const resetSearchForm = useCallback(() => {
-    setSearchForm((prev) => {
-      return {
-        ...prev,
-        item: { ...prev.initialItem },
+        [name]: nextValue,
       };
     });
   }, []);
@@ -145,7 +133,7 @@ const IssueGridPage = () => {
         groupCodes: ["USAGE_CD"],
       }),
     );
-    dispatch(fetchOwnerCodeListRequest(OWNER_CODE_SEARCH_INITIAL_ITEM));
+    dispatch(fetchOwnerCodeListRequest(initSearchConditions));
   }, [dispatch]);
 
   useEffect(() => {
@@ -301,8 +289,8 @@ const IssueGridPage = () => {
     clearNotice();
     setChangedRowMap({});
     setIsEditMode(false);
-    dispatch(fetchOwnerCodeListRequest(searchForm.item));
-  }, [clearNotice, dispatch, searchForm.item]);
+    dispatch(fetchOwnerCodeListRequest(searchConditions));
+  }, [clearNotice, dispatch, searchConditions]);
 
   const handleSave = useCallback(() => {
     clearNotice();
@@ -324,11 +312,11 @@ const IssueGridPage = () => {
         type: "success",
         message: t(I18N_KEYS.SAVE_SUCCESS, "저장되었습니다."),
       });
-      dispatch(fetchOwnerCodeListRequest(searchForm.item));
+      dispatch(fetchOwnerCodeListRequest(searchConditions));
     }
 
     prevSavingRef.current = saving;
-  }, [dispatch, saving, issueError, searchForm.item, t]);
+  }, [dispatch, saving, issueError, searchConditions, t]);
 
   useEffect(() => {
     const api = gridRef.current && gridRef.current.api;
@@ -345,24 +333,20 @@ const IssueGridPage = () => {
     }, 0);
   }, [isEditMode]);
 
-  const searchFormDisabled = listLoading || isEditMode;
+  const searchConditionDisabled = listLoading || isEditMode;
 
-  const handleSearchFormSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
-      clearNotice();
-      dispatch(fetchOwnerCodeListRequest(searchForm.item));
-    },
-    [clearNotice, dispatch, searchForm.item],
-  );
+  const handleSearchFormSubmit = useCallback(() => {
+    clearNotice();
+    setSearchConditions({ ...formValues });
+    dispatch(fetchOwnerCodeListRequest(formValues));
+  }, [clearNotice, dispatch, formValues]);
 
   const handleReset = useCallback(() => {
     clearNotice();
-    resetSearchForm();
-    dispatch(fetchOwnerCodeListRequest(OWNER_CODE_SEARCH_INITIAL_ITEM));
-  }, [clearNotice, dispatch, resetSearchForm]);
-
-  const { item: searchItem } = searchForm;
+    setFormValues({ ...initSearchConditions });
+    setSearchConditions({ ...initSearchConditions });
+    dispatch(fetchOwnerCodeListRequest(initSearchConditions));
+  }, [clearNotice, dispatch]);
 
   /** AG Grid 용도 컬럼 셀 렌더러 (페이지 내부, 참조 고정) */
   const CodeSelectRenderer = useMemo(() => {
@@ -550,9 +534,9 @@ const IssueGridPage = () => {
               <FormItem
                 label={t(I18N_KEYS.OWNER_CODE, "owner code")}
                 name="ownerCd"
-                value={searchItem.ownerCd}
-                onChange={setSearchFormField}
-                disabled={searchFormDisabled}
+                value={formValues.ownerCd}
+                onChange={setFormField}
+                disabled={searchConditionDisabled}
               >
                 <input
                   type="text"
@@ -572,13 +556,13 @@ const IssueGridPage = () => {
                 </label>
                 <CodeSelect
                   name="usageCd"
-                  value={searchItem.usageCd}
+                  value={formValues.usageCd}
                   options={usageOptions}
                   placeholder={usageSelectPlaceholder}
                   onChange={(value) => {
-                    setSearchFormField("usageCd", value);
+                    setFormField("usageCd", value);
                   }}
-                  disabled={searchFormDisabled}
+                  disabled={searchConditionDisabled}
                   className="search-field__control search-field__control--select"
                 />
               </div>
@@ -588,9 +572,9 @@ const IssueGridPage = () => {
               <FormItem
                 label={t(I18N_KEYS.NO_USAGE, "용도없음")}
                 name="noUsage"
-                value={searchItem.noUsage}
-                onChange={setSearchFormField}
-                disabled={searchFormDisabled}
+                value={formValues.noUsage}
+                onChange={setFormField}
+                disabled={searchConditionDisabled}
                 className="search-field search-field--checkbox"
               >
                 <input type="checkbox" />
@@ -603,7 +587,7 @@ const IssueGridPage = () => {
                   type="button"
                   className="btn btn-gray"
                   onClick={handleReset}
-                  disabled={searchFormDisabled}
+                  disabled={searchConditionDisabled}
                 >
                   {t(I18N_KEYS.RESET, "초기화")}
                 </button>
@@ -611,7 +595,7 @@ const IssueGridPage = () => {
                 <button
                   type="submit"
                   className="btn btn-blue"
-                  disabled={searchFormDisabled}
+                  disabled={searchConditionDisabled}
                 >
                   {t(I18N_KEYS.SEARCH, "검색")}
                 </button>
