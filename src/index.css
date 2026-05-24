@@ -21,6 +21,23 @@ select {
   min-height: 100vh;
 }
 
+.app-nav {
+  display: flex;
+  gap: 12px;
+  padding: 12px 24px 0;
+}
+
+.app-nav a {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.app-nav a:hover {
+  text-decoration: underline;
+}
+
 .page {
   padding: 24px;
 }

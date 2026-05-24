@@ -85,52 +85,38 @@ const CodeSelectRenderer = forwardRef(function CodeSelectRenderer(props, ref) {
   const editable = props.editable === true;
   const value = props.value || "";
 
-  // 수정 가능 셀은 배경색으로 구분
-  const cellWrapStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
-    boxSizing: "border-box",
-    textAlign: "center",
-    ...(editable ? { backgroundColor: "#fff4cc" } : {}),
-  };
+  if (!editable) {
+    return findUsageCodeName(options, value);
+  }
 
   return (
-    <div style={cellWrapStyle}>
-      {editable ? (
-        <select
-          value={value}
-          className="grid-select"
-          onChange={(event) => {
-            const nextValue = event.target.value;
+    <select
+      value={value}
+      className="grid-select"
+      onChange={(event) => {
+        const nextValue = event.target.value;
 
-            // ag-Grid 행 데이터에 선택값 반영
-            props.node.setDataValue(field, nextValue);
+        // ag-Grid 행 데이터에 선택값 반영
+        props.node.setDataValue(field, nextValue);
 
-            // 변경된 행을 저장 대상(changedRowMap)에 등록
-            if (props.onUsageChange && props.node.data) {
-              props.onUsageChange(props.node.data);
-            }
-          }}
-        >
-          <option value="">
-            {props.placeholder || props.selectDefaultLabel || "선택하세요."}
+        // 변경된 행을 저장 대상(changedRowMap)에 등록
+        if (props.onUsageChange && props.node.data) {
+          props.onUsageChange(props.node.data);
+        }
+      }}
+    >
+      <option value="">
+        {props.placeholder || props.selectDefaultLabel || "선택하세요."}
+      </option>
+
+      {options.map((item) => {
+        return (
+          <option key={item.code} value={item.code}>
+            {item.name}
           </option>
-
-          {options.map((item) => {
-            return (
-              <option key={item.code} value={item.code}>
-                {item.name}
-              </option>
-            );
-          })}
-        </select>
-      ) : (
-        findUsageCodeName(options, value)
-      )}
-    </div>
+        );
+      })}
+    </select>
   );
 });
 
@@ -212,8 +198,12 @@ const IssueGridPage = () => {
     });
   }, [issueError]);
 
-  // 수정 모드 전환 시 용도 컬럼 셀(select/텍스트) 재렌더
+  // 공통코드 로드 후 용도 표시명 갱신 (조회 모드)
   useEffect(() => {
+    if (isEditMode) {
+      return;
+    }
+
     const api = gridRef.current && gridRef.current.api;
 
     if (!api) {
@@ -224,7 +214,7 @@ const IssueGridPage = () => {
       force: true,
       columns: ["usageCd"],
     });
-  }, [isEditMode]);
+  }, [usageOptions, isEditMode]);
 
   /**
    * 조회조건 Form 필드 변경 핸들러
@@ -544,6 +534,7 @@ const IssueGridPage = () => {
       >
         <div className="ag-theme-balham issue-grid">
           <AgGridReact
+            key={isEditMode ? "edit" : "view"}
             ref={gridRef}
             rowData={rowData}
             columnDefs={columnDefs}
