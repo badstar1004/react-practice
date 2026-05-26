@@ -123,3 +123,25 @@
 .dev-area-rev-page .dev-area-rev-grid .ag-header-group-text {
   text-align: center;
 }
+
+/* rowSpan 병합 셀 */
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell {
+  background-color: #fff;
+  border-bottom: 1px solid #dce3ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-usage-cell {
+  font-weight: 700;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-row--usage-start .ag-cell {
+  border-top: 2px solid #94a3b8;
+}
