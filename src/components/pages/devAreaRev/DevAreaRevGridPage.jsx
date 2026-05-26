@@ -2,10 +2,13 @@
  * DevAreaRevGridPage.jsx
  *
  * devAreaCd 탭별 최종 Rev 조회 + 상세보기 팝업
+ * 조회 후 중첩/평면 데이터를 펼쳐 그리드를 동적으로 구성하고,
+ * ownerCd·usageCd 등 상위 컬럼은 rowSpan으로 세로 병합
  */
 
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -32,17 +35,27 @@ import Form from "components/common/Form";
 import Row from "components/common/Row";
 import Col from "components/common/Col";
 import FormItem from "components/common/FormItem";
+import { AG_GRID_DEFAULT_COL_DEF } from "utils/devAreaRev";
 import {
-  AG_GRID_DEFAULT_COL_DEF,
-  cloneRows,
-  findUsageCodeName,
-} from "utils/devAreaRev";
+  buildDevAreaRevDetailColumnDefs,
+  buildDevAreaRevGridModel,
+  DEV_AREA_REV_MERGE_FIELDS,
+} from "utils/devAreaRevGrid";
 import { normalizeCodeOptions } from "utils/ownerCode";
 import { I18N_KEYS } from "i18n/keys";
 
 import "./DevAreaRevGridPage.css";
 
-/** 상세보기 버튼 셀 */
+const MERGED_GRID_OPTIONS = {
+  suppressRowTransform: true,
+};
+
+const MERGED_GRID_DEFAULT_COL_DEF = {
+  ...AG_GRID_DEFAULT_COL_DEF,
+  sortable: false,
+  filter: false,
+};
+
 const DetailButtonRenderer = forwardRef(function DetailButtonRenderer(props, ref) {
   useImperativeHandle(ref, () => ({
     refresh() {
@@ -87,41 +100,59 @@ const DevAreaRevGridPage = () => {
   const apiError = devAreaRevState.error || commonCodeState.error || null;
 
   const [activeDevAreaCd, setActiveDevAreaCd] = useState("");
-  const [rowData, setRowData] = useState([]);
   const [detailRow, setDetailRow] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const usageOptions = normalizeCodeOptions(commonCodeState.usageCodeList);
-  // revList는 최종 Rev만 포함 → 첫 행의 finalRev가 조회조건 표시값
   const finalRevDisplay =
     revList.length > 0 && revList[0].finalRev !== undefined
       ? String(revList[0].finalRev)
       : "";
 
-  // 최초: 탭 목록 + 용도 공통코드
+  const handleDetailClick = useCallback((row) => {
+    setDetailRow(row);
+  }, []);
+
+  const gridModel = useMemo(() => {
+    return buildDevAreaRevGridModel({
+      revList,
+      mergeFields: DEV_AREA_REV_MERGE_FIELDS,
+      t,
+      i18nKeys: I18N_KEYS,
+      usageOptions,
+      onDetailClick: handleDetailClick,
+      detailLabel: t(I18N_KEYS.VIEW_DETAIL, "상세보기"),
+      DetailButtonRenderer,
+    });
+  }, [revList, t, usageOptions, handleDetailClick]);
+
+  const { rowData, columnDefs } = gridModel;
+
+  const detailColumnDefs = useMemo(() => {
+    return buildDevAreaRevDetailColumnDefs({
+      t,
+      i18nKeys: I18N_KEYS,
+      usageOptions,
+      DetailButtonRenderer,
+    });
+  }, [t, usageOptions]);
+
   useEffect(() => {
     dispatch(fetchDevAreaListRequest());
     dispatch(fetchCommonCodeRequest({ groupCodes: ["USAGE_CD"] }));
   }, [dispatch]);
 
-  // 탭 목록 로드 → 첫 탭 선택
   useEffect(() => {
     if (devAreaList.length > 0 && !activeDevAreaCd) {
       setActiveDevAreaCd(devAreaList[0].devAreaCd);
     }
   }, [devAreaList, activeDevAreaCd]);
 
-  // 탭 변경 → Rev 목록 조회 (최종 Rev 필터는 saga에서 처리)
   useEffect(() => {
     if (activeDevAreaCd) {
       dispatch(fetchDevAreaRevListRequest({ devAreaCd: activeDevAreaCd }));
     }
   }, [activeDevAreaCd, dispatch]);
-
-  // Redux revList → 그리드 rowData
-  useEffect(() => {
-    setRowData(cloneRows(revList));
-  }, [revList]);
 
   function handleTabChange(devAreaCd) {
     if (devAreaCd !== activeDevAreaCd) {
@@ -141,124 +172,12 @@ const DevAreaRevGridPage = () => {
     }
   }
 
-  function handleDetailClick(row) {
-    setDetailRow(row);
-  }
-
   function handleCloseDetail() {
     setDetailRow(null);
   }
 
-  /**
-   * 2단 헤더 공통 컬럼
-   * children 배열이 있으면 ag-Grid가 1행(그룹명) + 2행(컬럼명)으로 표시
-   */
-  const groupColumnDefs = useMemo(() => {
-    return [
-      {
-        headerName: t(I18N_KEYS.OWNER_INFO, "Owner 정보"),
-        marryChildren: true,
-        children: [
-          {
-            headerName: t(I18N_KEYS.OWNER_CODE, "owner code"),
-            field: "ownerCd",
-            width: 120,
-          },
-          {
-            headerName: t(I18N_KEYS.USAGE, "용도"),
-            field: "usageCd",
-            width: 100,
-            valueFormatter: (params) => {
-              return findUsageCodeName(usageOptions, params.value);
-            },
-          },
-        ],
-      },
-      {
-        headerName: t(I18N_KEYS.REV_INFO, "Rev 정보"),
-        marryChildren: true,
-        children: [
-          {
-            headerName: t(I18N_KEYS.FINAL_REV, "최종 Rev"),
-            field: "finalRev",
-            width: 88,
-          },
-          {
-            headerName: t(I18N_KEYS.REV_STATUS, "Rev 상태"),
-            field: "revStatus",
-            width: 100,
-          },
-          {
-            headerName: t(I18N_KEYS.REV_DESC, "Rev 설명"),
-            field: "revDesc",
-            minWidth: 160,
-            flex: 1,
-          },
-        ],
-      },
-      {
-        headerName: t(I18N_KEYS.REG_INFO, "등록 정보"),
-        marryChildren: true,
-        children: [
-          {
-            headerName: t(I18N_KEYS.CREATE_USER, "등록자"),
-            field: "createUser",
-            width: 100,
-          },
-          {
-            headerName: t(I18N_KEYS.CREATE_DT, "등록일시"),
-            field: "createDt",
-            width: 140,
-          },
-        ],
-      },
-      {
-        headerName: t(I18N_KEYS.MOD_INFO, "수정 정보"),
-        marryChildren: true,
-        children: [
-          {
-            headerName: t(I18N_KEYS.UPDATE_USER, "수정자"),
-            field: "updateUser",
-            width: 100,
-          },
-          {
-            headerName: t(I18N_KEYS.UPDATE_DT, "수정일시"),
-            field: "updateDt",
-            width: 140,
-          },
-        ],
-      },
-    ];
-  }, [t, usageOptions]);
-
-  // 목록 그리드: No + 공통 컬럼 + 상세보기
-  const columnDefs = useMemo(() => {
-    return [
-      {
-        headerName: t(I18N_KEYS.ROW_NO, "No"),
-        width: 64,
-        pinned: "left",
-        valueGetter: (params) => params.node.rowIndex + 1,
-      },
-      ...groupColumnDefs,
-      {
-        headerName: t(I18N_KEYS.VIEW_DETAIL, "상세보기"),
-        width: 100,
-        pinned: "right",
-        sortable: false,
-        filter: false,
-        cellRendererFramework: DetailButtonRenderer,
-        cellRendererParams: {
-          detailLabel: t(I18N_KEYS.VIEW_DETAIL, "상세보기"),
-          onDetailClick: handleDetailClick,
-        },
-      },
-    ];
-  }, [t, groupColumnDefs]);
-
   return (
     <div className="page dev-area-rev-page">
-      {/* devAreaCd 탭 */}
       <div className="dev-area-tabs">
         {devAreaList.map((item) => (
           <button
@@ -277,7 +196,6 @@ const DevAreaRevGridPage = () => {
         ))}
       </div>
 
-      {/* 조회조건 */}
       <section className="issue-search-box">
         <div className="issue-search-box__title">
           {t(I18N_KEYS.SEARCH_CONDITION, "조회조건")}
@@ -333,20 +251,32 @@ const DevAreaRevGridPage = () => {
         </div>
       )}
 
-      {/* Rev 목록 그리드 */}
       <Header title={t(I18N_KEYS.REV_GRID_TITLE, "Rev 목록")} count={rowData.length}>
         <div className="ag-theme-balham dev-area-rev-grid">
           <AgGridReact
+            key={`rev-grid-${activeDevAreaCd}-${rowData.length}`}
             rowData={rowData}
             columnDefs={columnDefs}
-            defaultColDef={AG_GRID_DEFAULT_COL_DEF}
+            defaultColDef={MERGED_GRID_DEFAULT_COL_DEF}
+            gridOptions={MERGED_GRID_OPTIONS}
             headerHeight={36}
             groupHeaderHeight={36}
+            getRowNodeId={(params) => {
+              const data = params.data || {};
+              return [
+                data.ownerCd,
+                data.usageCd,
+                data.finalRev,
+                data.revStatus,
+                data.createDt,
+              ]
+                .filter((value) => value !== undefined && value !== null)
+                .join("_");
+            }}
           />
         </div>
       </Header>
 
-      {/* 상세보기 팝업 — 클릭한 행을 그대로 1건 표시 (별도 API 없음) */}
       <Modal
         open={Boolean(detailRow)}
         wide
@@ -357,7 +287,7 @@ const DevAreaRevGridPage = () => {
         <div className="ag-theme-balham dev-area-rev-detail-grid">
           <AgGridReact
             rowData={detailRow ? [detailRow] : []}
-            columnDefs={groupColumnDefs}
+            columnDefs={detailColumnDefs}
             defaultColDef={AG_GRID_DEFAULT_COL_DEF}
             headerHeight={36}
             groupHeaderHeight={36}

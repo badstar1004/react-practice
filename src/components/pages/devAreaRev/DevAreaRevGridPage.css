@@ -123,3 +123,30 @@
 .dev-area-rev-page .dev-area-rev-grid .ag-header-group-text {
   text-align: center;
 }
+
+/* rowSpan 병합 셀 — 가려지는 하위 행·병합 마스터 셀 배경 */
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell {
+  background-color: #fff;
+  border-bottom: 1px solid #dce3ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell {
+  background-color: #fff;
+  border-bottom: 1px solid #dce3ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dev-area-rev-page .dev-area-rev-grid .dev-area-rev-merge-cell--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
