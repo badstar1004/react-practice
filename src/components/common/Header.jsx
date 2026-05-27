@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { I18N_KEYS } from "i18n/keys";
 import "./Header.css";
 
-const Header = ({ title, count, buttons, children }) => {
+const Header = ({ title, count, subInfo, buttons, children }) => {
   const { t } = useTranslation();
 
   return (
@@ -27,6 +27,10 @@ const Header = ({ title, count, buttons, children }) => {
 
         <div className="grid-section__right">{buttons}</div>
       </div>
+
+      {subInfo !== undefined && subInfo !== null && subInfo !== "" && (
+        <div className="grid-section__subinfo">{subInfo}</div>
+      )}
 
       <div className="grid-section__body">{children}</div>
     </section>

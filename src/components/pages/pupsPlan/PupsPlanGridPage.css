@@ -1,0 +1,82 @@
+/**
+ * PupsPlanGridPage.css
+ */
+
+.pups-plan-page .pups-plan-grid {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  min-height: 300px;
+}
+
+.pups-plan-page .pups-plan-last-rev {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pups-plan-page .pups-plan-grid .ag-header-group-cell-label,
+.pups-plan-page .pups-plan-grid .ag-header-cell-label {
+  justify-content: center;
+}
+
+.pups-plan-page .pups-plan-grid .ag-header-cell-text,
+.pups-plan-page .pups-plan-grid .ag-header-group-text {
+  text-align: center;
+}
+
+/* 오른쪽 propNm 그룹 헤더 */
+.pups-plan-page .pups-plan-grid .ag-header-group-cell.pups-plan-group-header {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* 왼쪽 병합 셀 */
+.pups-plan-page .pups-plan-grid .pups-plan-merge-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border-bottom: 1px solid #dce3ee;
+  font-weight: 700;
+}
+
+.pups-plan-page .pups-plan-grid .pups-plan-merge-cell--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 합계 컬럼 */
+.pups-plan-page .pups-plan-grid .pups-plan-total-cell {
+  background-color: #f8fafc;
+  font-weight: 700;
+  text-align: right;
+  padding-right: 12px;
+}
+
+/* 피벗 셀 — 우측 정렬 + 옅은 구분선 */
+.pups-plan-page .pups-plan-grid .pups-plan-pivot-cell {
+  text-align: right;
+  padding-right: 12px;
+}
+
+/* 조회 중 오버레이 */
+.pups-plan-page .pups-plan-grid__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  color: #1d4ed8;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 5;
+}

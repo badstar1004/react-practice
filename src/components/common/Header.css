@@ -40,6 +40,16 @@
   font-weight: 700;
 }
 
+.grid-section__subinfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
 .grid-section__body {
   width: 100%;
   min-height: 0;
