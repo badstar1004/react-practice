@@ -1,0 +1,17 @@
+import clientApi from "./clientApi";
+
+/** 불출 투입량 목록 조회 (변환) */
+export const fetchIssueReleaseListApi = (params) =>
+  clientApi.get("/issue-release", { params });
+
+/** 불출 투입량 저장 */
+export const saveIssueReleaseApi = (payload) =>
+  clientApi.post("/issue-release/save", payload);
+
+/** 불출입력 데이터변경일 수정 */
+export const updateIssueReleaseModifyDateApi = (payload) =>
+  clientApi.put("/issue-release/modify-date", payload);
+
+/** 프로젝트 확정 */
+export const confirmIssueReleaseProjectApi = (payload) =>
+  clientApi.post("/issue-release/confirm", payload);

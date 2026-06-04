@@ -3,7 +3,14 @@ import issueSaga from "./issue/issueSaga";
 import commonCodeSaga from "./commonCode/commonCodeSaga";
 import devAreaRevSaga from "./devAreaRev/devAreaRevSaga";
 import pupsPlanSaga from "./pupsPlan/pupsPlanSaga";
+import issueReleaseSaga from "./issueRelease/issueReleaseSaga";
 
 export default function* rootSaga() {
-  yield all([issueSaga(), commonCodeSaga(), devAreaRevSaga(), pupsPlanSaga()]);
+  yield all([
+    issueSaga(),
+    commonCodeSaga(),
+    devAreaRevSaga(),
+    pupsPlanSaga(),
+    issueReleaseSaga(),
+  ]);
 }

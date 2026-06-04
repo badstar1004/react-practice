@@ -1,0 +1,178 @@
+/**
+ * IssueReleaseGridPage.css
+ */
+
+.issue-release-page .issue-release-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.issue-release-page .issue-release-tabs__button {
+  min-width: 96px;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.issue-release-page .issue-release-tabs__button.is-active {
+  border-color: #2f80ed;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.issue-release-page .issue-release-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid #dce3ee;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.issue-release-page .issue-release-summary__title {
+  color: #1f2937;
+}
+
+.issue-release-page .issue-release-summary__rev {
+  color: #1d4ed8;
+}
+
+.issue-release-page .issue-release-summary__status {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.issue-release-page .issue-release-modify-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #dce3ee;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.issue-release-page .issue-release-modify-box__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.issue-release-page .issue-release-modify-box__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.issue-release-page .issue-release-modify-box__date {
+  height: 36px;
+  min-width: 180px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.issue-release-page .issue-release-grid {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  min-height: 300px;
+}
+
+.issue-release-page .issue-release-grid .ag-header-group-cell-label,
+.issue-release-page .issue-release-grid .ag-header-cell-label {
+  justify-content: center;
+}
+
+.issue-release-page .issue-release-grid .ag-header-cell-text,
+.issue-release-page .issue-release-grid .ag-header-group-text {
+  text-align: center;
+}
+
+.issue-release-page .issue-release-grid .ag-header-group-cell.issue-release-group-header {
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.issue-release-page .issue-release-grid .issue-release-merge-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border-bottom: 1px solid #dce3ee;
+  font-weight: 700;
+}
+
+.issue-release-page .issue-release-grid .issue-release-merge-cell--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.issue-release-page .issue-release-grid .issue-release-total-cell {
+  background-color: #f8fafc;
+  font-weight: 700;
+  text-align: right;
+  padding-right: 12px;
+}
+
+.issue-release-page .issue-release-grid .issue-release-editable-cell {
+  background-color: #ffedd5;
+  text-align: right;
+  padding-right: 12px;
+}
+
+.issue-release-page .issue-release-grid__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  color: #1d4ed8;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.issue-release-page .issue-release-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.issue-release-page .issue-release-footer__confirm {
+  min-width: 88px;
+}
+
+.issue-release-page .issue-release-placeholder {
+  padding: 48px 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  background: #fff;
+  text-align: center;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.issue-release-page .issue-release-placeholder p {
+  margin: 0;
+}
