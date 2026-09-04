@@ -13,13 +13,6 @@ export const SAVE_ISSUE_RELEASE_REQUEST = "SAVE_ISSUE_RELEASE_REQUEST";
 export const SAVE_ISSUE_RELEASE_SUCCESS = "SAVE_ISSUE_RELEASE_SUCCESS";
 export const SAVE_ISSUE_RELEASE_FAILURE = "SAVE_ISSUE_RELEASE_FAILURE";
 
-export const UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST =
-  "UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST";
-export const UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS =
-  "UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS";
-export const UPDATE_ISSUE_RELEASE_MODIFY_DATE_FAILURE =
-  "UPDATE_ISSUE_RELEASE_MODIFY_DATE_FAILURE";
-
 export const CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST =
   "CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST";
 export const CONFIRM_ISSUE_RELEASE_PROJECT_SUCCESS =
@@ -64,21 +57,6 @@ export const saveIssueReleaseSuccess = (data = {}) => ({
 
 export const saveIssueReleaseFailure = (error) => ({
   type: SAVE_ISSUE_RELEASE_FAILURE,
-  error,
-});
-
-export const updateIssueReleaseModifyDateRequest = (payload) => ({
-  type: UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST,
-  payload,
-});
-
-export const updateIssueReleaseModifyDateSuccess = (data = {}) => ({
-  type: UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS,
-  ...data,
-});
-
-export const updateIssueReleaseModifyDateFailure = (error) => ({
-  type: UPDATE_ISSUE_RELEASE_MODIFY_DATE_FAILURE,
   error,
 });
 

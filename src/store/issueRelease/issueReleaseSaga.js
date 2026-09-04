@@ -3,7 +3,6 @@ import { call, put, takeLatest } from "redux-saga/effects";
 import {
   fetchIssueReleaseListApi,
   saveIssueReleaseApi,
-  updateIssueReleaseModifyDateApi,
   confirmIssueReleaseProjectApi,
   reviseIssueReleaseApi,
 } from "api/issueReleaseApi";
@@ -12,12 +11,10 @@ import { makeApiError } from "utils/makeApiError";
 import {
   FETCH_ISSUE_RELEASE_LIST_REQUEST,
   SAVE_ISSUE_RELEASE_REQUEST,
-  UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST,
   CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST,
   REVISE_ISSUE_RELEASE_REQUEST,
   fetchIssueReleaseListSuccess,
   saveIssueReleaseSuccess,
-  updateIssueReleaseModifyDateSuccess,
   confirmIssueReleaseProjectSuccess,
   reviseIssueReleaseSuccess,
   reviseIssueReleaseFailure,
@@ -184,19 +181,6 @@ function* saveIssueReleaseSaga({ payload }) {
   }
 }
 
-function* updateModifyDateSaga({ payload }) {
-  try {
-    yield call(updateIssueReleaseModifyDateApi, payload);
-    yield put(
-      updateIssueReleaseModifyDateSuccess({ message: "수정일이 반영되었습니다." }),
-    );
-  } catch {
-    yield put(
-      updateIssueReleaseModifyDateSuccess({ message: "수정일이 반영되었습니다." }),
-    );
-  }
-}
-
 function* confirmProjectSaga({ payload }) {
   try {
     const response = yield call(confirmIssueReleaseProjectApi, payload);
@@ -257,12 +241,6 @@ function* reviseIssueReleaseSaga({ payload }) {
 export default function* issueReleaseSaga() {
   yield takeLatest(FETCH_ISSUE_RELEASE_LIST_REQUEST, fetchIssueReleaseListSaga);
   yield takeLatest(SAVE_ISSUE_RELEASE_REQUEST, saveIssueReleaseSaga);
-  yield takeLatest(
-    UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST,
-    updateModifyDateSaga,
-  );
   yield takeLatest(CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST, confirmProjectSaga);
   yield takeLatest(REVISE_ISSUE_RELEASE_REQUEST, reviseIssueReleaseSaga);
 }
-
-export const MOCK_ISSUE_RELEASE_DATA = mockProject.dataList;

@@ -5,9 +5,6 @@ import {
   SAVE_ISSUE_RELEASE_REQUEST,
   SAVE_ISSUE_RELEASE_SUCCESS,
   SAVE_ISSUE_RELEASE_FAILURE,
-  UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST,
-  UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS,
-  UPDATE_ISSUE_RELEASE_MODIFY_DATE_FAILURE,
   CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST,
   CONFIRM_ISSUE_RELEASE_PROJECT_SUCCESS,
   CONFIRM_ISSUE_RELEASE_PROJECT_FAILURE,
@@ -22,7 +19,6 @@ const initialState = {
   saving: false,
   confirming: false,
   revising: false,
-  modifyDateLoading: false,
   projectStatus: "",
   lastRev: "",
   error: null,
@@ -88,28 +84,6 @@ export default function issueReleaseReducer(
       return {
         ...state,
         saving: false,
-        error,
-      };
-
-    case UPDATE_ISSUE_RELEASE_MODIFY_DATE_REQUEST:
-      return {
-        ...state,
-        modifyDateLoading: true,
-        error: null,
-        lastMessage: null,
-      };
-
-    case UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS:
-      return {
-        ...state,
-        modifyDateLoading: false,
-        lastMessage: message || "수정일이 반영되었습니다.",
-      };
-
-    case UPDATE_ISSUE_RELEASE_MODIFY_DATE_FAILURE:
-      return {
-        ...state,
-        modifyDateLoading: false,
         error,
       };
 

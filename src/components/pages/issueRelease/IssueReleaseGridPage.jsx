@@ -94,13 +94,9 @@ function isLockedPivotField(field, lockPastMonths) {
   return isLockedInputDt(getInputDtFromPivotField(field), lockPastMonths);
 }
 
-function isFirstPlanRev(lastRev) {
-  const rev = Number(lastRev);
-  return !Number.isFinite(rev) || rev <= 1;
-}
-
 function hasPreviousRev(lastRev) {
-  return !isFirstPlanRev(lastRev);
+  const rev = Number(lastRev);
+  return Number.isFinite(rev) && rev > 1;
 }
 
 function isConfirmedStatus(status) {
@@ -109,13 +105,6 @@ function isConfirmedStatus(status) {
 
 function isTotalField(field) {
   return field === "qtyTotal";
-}
-
-function isEnterKey(event) {
-  if (!event) {
-    return false;
-  }
-  return event.key === "Enter" || event.which === 13 || event.keyCode === 13;
 }
 
 function isDeleteKey(event) {
@@ -284,7 +273,7 @@ function buildIssueReleaseRows(records) {
     row.qtyTotal += qty;
 
     // 월은 Period 를 통틀어 중복되지 않으므로 한 월 = 한 컬럼 = 한 레코드다.
-    if (record.periodCd && record.inputDt) {
+    if (record.inputDt) {
       row[pivotFieldName(record.inputDt)] = qty;
     }
   });
@@ -786,14 +775,11 @@ const IssueReleaseGridPage = () => {
   const saving = Boolean(issueReleaseState.saving);
   const confirming = Boolean(issueReleaseState.confirming);
   const revising = Boolean(issueReleaseState.revising);
-  const modifyDateLoading = Boolean(issueReleaseState.modifyDateLoading);
   const apiError = issueReleaseState.error || null;
   const projectStatus = issueReleaseState.projectStatus || "";
-  const isBusy =
-    listLoading || saving || confirming || modifyDateLoading || revising;
+  const isBusy = listLoading || saving || confirming || revising;
 
   const [activeTab, setActiveTab] = useState(TAB_ISSUE);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [modifyDate, setModifyDate] = useState("");
   const [extraPeriodColumns, setExtraPeriodColumns] = useState([]);
   const [gridRowData, setGridRowData] = useState([]);
@@ -819,6 +805,7 @@ const IssueReleaseGridPage = () => {
   }, [dataList, issueReleaseState.lastRev]);
 
   const confirmed = isConfirmedStatus(projectStatus);
+  const isEditMode = !confirmed && dataList.length > 0;
   const lockPastMonths = hasPreviousRev(lastRev) || revising;
 
   const projectId = useMemo(() => {
@@ -844,50 +831,6 @@ const IssueReleaseGridPage = () => {
     if (api) {
       api.refreshCells({ force: true });
     }
-  }, []);
-
-  const clearRangeToZero = useCallback(() => {
-    const api = gridApiRef.current;
-    if (!api || typeof api.getCellRanges !== "function") {
-      return;
-    }
-
-    (api.getCellRanges() || []).forEach((cellRange) => {
-      if (
-        !cellRange ||
-        !cellRange.startRow ||
-        !cellRange.endRow ||
-        !Array.isArray(cellRange.columns)
-      ) {
-        return;
-      }
-      const rowStart = Math.min(
-        cellRange.startRow.rowIndex,
-        cellRange.endRow.rowIndex,
-      );
-      const rowEnd = Math.max(
-        cellRange.startRow.rowIndex,
-        cellRange.endRow.rowIndex,
-      );
-
-      for (let rowIdx = rowStart; rowIdx <= rowEnd; rowIdx += 1) {
-        cellRange.columns.forEach((column) => {
-          const colDef = column.getColDef ? column.getColDef() : null;
-          if (
-            !colDef ||
-            colDef.editable !== true ||
-            !isPivotField(colDef.field)
-          ) {
-            return;
-          }
-          const rowNode = api.getDisplayedRowAtIndex(rowIdx);
-          if (rowNode) {
-            rowNode.setDataValue(column, 0);
-          }
-        });
-      }
-    });
-    api.refreshCells({ columns: ["qtyTotal"], force: true });
   }, []);
 
   const selectColumnIds = useCallback(
@@ -916,13 +859,10 @@ const IssueReleaseGridPage = () => {
     [commitCellRange],
   );
 
+  // 조회·Rev 변경으로 원본이 바뀌면 그리드를 다시 맞춘다. 월 추가는 handleModifyDate 에서 반영한다.
   useEffect(() => {
     setGridRowData(ensureExtraMonthFields(sourceRowData, extraPeriodColumns));
   }, [sourceRowData]);
-
-  useEffect(() => {
-    setGridRowData((prev) => ensureExtraMonthFields(prev, extraPeriodColumns));
-  }, [extraPeriodColumns]);
 
   useEffect(() => {
     if (issueReleaseState.lastMessage) {
@@ -1016,6 +956,7 @@ const IssueReleaseGridPage = () => {
         const leafIds = getGroupHeaderLeafColIds(columnApi, groupId);
         if (leafIds.length > 0) {
           event.preventDefault();
+          event.currentTarget.focus({ preventScroll: true });
           rangeDragRef.current = false;
           headerDragRef.current = true;
           selectColumnIds(leafIds);
@@ -1033,6 +974,7 @@ const IssueReleaseGridPage = () => {
       }
 
       event.preventDefault();
+      event.currentTarget.focus({ preventScroll: true });
       rangeDragRef.current = false;
       headerDragRef.current = true;
 
@@ -1088,36 +1030,30 @@ const IssueReleaseGridPage = () => {
     return () => window.removeEventListener("mouseup", onMouseUp);
   }, []);
 
-  useEffect(() => {
-    const onKeyDown = (event) => {
-      const target = event.target;
+  const onGridKeyDown = useCallback(
+    (event) => {
       if (
-        target &&
-        typeof target.closest === "function" &&
-        target.closest("input, textarea, select")
+        event.target &&
+        typeof event.target.closest === "function" &&
+        event.target.closest("input, textarea")
       ) {
         return;
       }
 
       const api = gridApiRef.current;
       const columnApi = columnApiRef.current;
-      const focused = api && api.getFocusedCell ? api.getFocusedCell() : null;
-      const focusedField =
-        focused && focused.column && focused.column.getColDef()
-          ? focused.column.getColDef().field
-          : "";
-
-      if (isEnterKey(event) && isTotalField(focusedField)) {
-        event.preventDefault();
-        return;
-      }
 
       if (isDeleteKey(event)) {
-        if (!isEditMode || event.defaultPrevented) {
+        if (!isEditMode || event.defaultPrevented || !api) {
           return;
         }
         event.preventDefault();
-        clearRangeToZero();
+        suppressKeyboardEvent({
+          api,
+          editing: false,
+          colDef: { field: "qtyTotal" },
+          event,
+        });
         return;
       }
 
@@ -1213,24 +1149,9 @@ const IssueReleaseGridPage = () => {
           return next;
         });
       });
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [clearRangeToZero, isEditMode, lockPastMonths]);
-
-  useEffect(() => {
-    if (listLoading) {
-      return;
-    }
-    if (confirmed) {
-      setIsEditMode(false);
-      return;
-    }
-    if (dataList.length > 0) {
-      setIsEditMode(true);
-    }
-  }, [confirmed, dataList.length, listLoading]);
+    },
+    [isEditMode, lockPastMonths],
+  );
 
   const handleConvert = useCallback(() => {
     dispatch(fetchIssueReleaseListRequest({ projectId }));
@@ -1299,7 +1220,7 @@ const IssueReleaseGridPage = () => {
       return;
     }
 
-    if (confirmed || !isEditMode) {
+    if (confirmed) {
       setNotice({
         type: "error",
         message: t(
@@ -1350,8 +1271,9 @@ const IssueReleaseGridPage = () => {
     }
 
     const periodCd = nextPeriodCd(periodGroups);
-    setExtraPeriodColumns((prev) => [...prev, { periodCd, inputDt }]);
-    setIsEditMode(true);
+    const nextColumns = [...extraPeriodColumns, { periodCd, inputDt }];
+    setExtraPeriodColumns(nextColumns);
+    setGridRowData((prev) => ensureExtraMonthFields(prev, nextColumns));
     setNotice({
       type: "success",
       message: t(
@@ -1362,8 +1284,8 @@ const IssueReleaseGridPage = () => {
     });
   }, [
     confirmed,
+    extraPeriodColumns,
     gridRowData,
-    isEditMode,
     lastRev,
     modifyDate,
     periodGroups,
@@ -1384,7 +1306,6 @@ const IssueReleaseGridPage = () => {
     }
 
     dispatch(confirmIssueReleaseProjectRequest({ projectId, lastRev }));
-    setIsEditMode(false);
   }, [dispatch, lastRev, projectId, t]);
 
   const onCellValueChanged = useCallback((params) => {
@@ -1535,8 +1456,10 @@ const IssueReleaseGridPage = () => {
           >
             <div
               className="ag-theme-balham issue-release-grid"
+              tabIndex={-1}
               onMouseDown={onGridHeaderMouseDown}
               onMouseOver={onGridHeaderMouseOver}
+              onKeyDown={onGridKeyDown}
             >
               <AgGridReact
                 key={`issue-release-grid-${periodGroups.length}-${isEditMode ? "edit" : "view"}-${lastRev}-${lockPastMonths ? "lock" : "open"}`}

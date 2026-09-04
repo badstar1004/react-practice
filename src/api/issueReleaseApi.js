@@ -8,10 +8,6 @@ export const fetchIssueReleaseListApi = (params) =>
 export const saveIssueReleaseApi = (payload) =>
   clientApi.post("/issue-release/save", payload);
 
-/** 불출입력 데이터변경일 수정 */
-export const updateIssueReleaseModifyDateApi = (payload) =>
-  clientApi.put("/issue-release/modify-date", payload);
-
 /** 프로젝트 확정 */
 export const confirmIssueReleaseProjectApi = (payload) =>
   clientApi.post("/issue-release/confirm", payload);

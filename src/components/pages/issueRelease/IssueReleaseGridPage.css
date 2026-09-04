@@ -98,6 +98,10 @@
   user-select: none;
 }
 
+.issue-release-page .issue-release-grid:focus {
+  outline: none;
+}
+
 .issue-release-page .issue-release-grid .ag-header-group-cell-label,
 .issue-release-page .issue-release-grid .ag-header-cell-label {
   justify-content: center;
@@ -148,7 +152,8 @@
   padding-right: 12px;
 }
 
-.issue-release-page .issue-release-grid .ag-header-group-cell.issue-release-locked-group-header {
+.issue-release-page .issue-release-grid .ag-header-group-cell.issue-release-locked-group-header,
+.issue-release-page .issue-release-grid .ag-header-cell.issue-release-locked-header {
   background-color: #e5e7eb !important;
   color: #6b7280;
 }
