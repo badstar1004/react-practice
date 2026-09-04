@@ -11,6 +11,9 @@ import {
   CONFIRM_ISSUE_RELEASE_PROJECT_REQUEST,
   CONFIRM_ISSUE_RELEASE_PROJECT_SUCCESS,
   CONFIRM_ISSUE_RELEASE_PROJECT_FAILURE,
+  REVISE_ISSUE_RELEASE_REQUEST,
+  REVISE_ISSUE_RELEASE_SUCCESS,
+  REVISE_ISSUE_RELEASE_FAILURE,
 } from "./issueReleaseAction";
 
 const initialState = {
@@ -18,15 +21,29 @@ const initialState = {
   listLoading: false,
   saving: false,
   confirming: false,
+  revising: false,
   modifyDateLoading: false,
   projectStatus: "",
+  lastRev: "",
   error: null,
   lastMessage: null,
 };
 
+function resolveLastRev(lastRev, dataList, fallback) {
+  if (lastRev != null && lastRev !== "") {
+    return String(lastRev);
+  }
+  const fromRow =
+    Array.isArray(dataList) && dataList.length > 0 ? dataList[0]?.lastRev : null;
+  if (fromRow != null && fromRow !== "") {
+    return String(fromRow);
+  }
+  return fallback;
+}
+
 export default function issueReleaseReducer(
   state = initialState,
-  { type, dataList, error, projectStatus, message } = {},
+  { type, dataList, error, projectStatus, message, lastRev } = {},
 ) {
   switch (type) {
     case FETCH_ISSUE_RELEASE_LIST_REQUEST:
@@ -42,6 +59,7 @@ export default function issueReleaseReducer(
         listLoading: false,
         dataList: Array.isArray(dataList) ? dataList : [],
         projectStatus: projectStatus || state.projectStatus,
+        lastRev: resolveLastRev(lastRev, dataList, state.lastRev),
       };
 
     case FETCH_ISSUE_RELEASE_LIST_FAILURE:
@@ -108,6 +126,7 @@ export default function issueReleaseReducer(
         ...state,
         confirming: false,
         projectStatus: projectStatus || "CONFIRMED",
+        lastRev: resolveLastRev(lastRev, state.dataList, state.lastRev),
         lastMessage: message || "확정되었습니다.",
       };
 
@@ -115,6 +134,31 @@ export default function issueReleaseReducer(
       return {
         ...state,
         confirming: false,
+        error,
+      };
+
+    case REVISE_ISSUE_RELEASE_REQUEST:
+      return {
+        ...state,
+        revising: true,
+        error: null,
+        lastMessage: null,
+      };
+
+    case REVISE_ISSUE_RELEASE_SUCCESS:
+      return {
+        ...state,
+        revising: false,
+        dataList: Array.isArray(dataList) ? dataList : state.dataList,
+        projectStatus: projectStatus || "DRAFT",
+        lastRev: resolveLastRev(lastRev, dataList, state.lastRev),
+        lastMessage: message || "이전 Rev를 복사하여 새 Rev를 생성했습니다.",
+      };
+
+    case REVISE_ISSUE_RELEASE_FAILURE:
+      return {
+        ...state,
+        revising: false,
         error,
       };
 

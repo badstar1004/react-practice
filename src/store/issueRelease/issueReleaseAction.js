@@ -27,15 +27,24 @@ export const CONFIRM_ISSUE_RELEASE_PROJECT_SUCCESS =
 export const CONFIRM_ISSUE_RELEASE_PROJECT_FAILURE =
   "CONFIRM_ISSUE_RELEASE_PROJECT_FAILURE";
 
+export const REVISE_ISSUE_RELEASE_REQUEST = "REVISE_ISSUE_RELEASE_REQUEST";
+export const REVISE_ISSUE_RELEASE_SUCCESS = "REVISE_ISSUE_RELEASE_SUCCESS";
+export const REVISE_ISSUE_RELEASE_FAILURE = "REVISE_ISSUE_RELEASE_FAILURE";
+
 export const fetchIssueReleaseListRequest = (payload) => ({
   type: FETCH_ISSUE_RELEASE_LIST_REQUEST,
   payload,
 });
 
-export const fetchIssueReleaseListSuccess = ({ dataList, projectStatus }) => ({
+export const fetchIssueReleaseListSuccess = ({
+  dataList,
+  projectStatus,
+  lastRev,
+}) => ({
   type: FETCH_ISSUE_RELEASE_LIST_SUCCESS,
   dataList,
   projectStatus,
+  lastRev,
 });
 
 export const fetchIssueReleaseListFailure = (error) => ({
@@ -48,9 +57,9 @@ export const saveIssueReleaseRequest = (payload) => ({
   payload,
 });
 
-export const saveIssueReleaseSuccess = (data) => ({
+export const saveIssueReleaseSuccess = (data = {}) => ({
   type: SAVE_ISSUE_RELEASE_SUCCESS,
-  data,
+  ...data,
 });
 
 export const saveIssueReleaseFailure = (error) => ({
@@ -63,9 +72,9 @@ export const updateIssueReleaseModifyDateRequest = (payload) => ({
   payload,
 });
 
-export const updateIssueReleaseModifyDateSuccess = (data) => ({
+export const updateIssueReleaseModifyDateSuccess = (data = {}) => ({
   type: UPDATE_ISSUE_RELEASE_MODIFY_DATE_SUCCESS,
-  data,
+  ...data,
 });
 
 export const updateIssueReleaseModifyDateFailure = (error) => ({
@@ -78,12 +87,27 @@ export const confirmIssueReleaseProjectRequest = (payload) => ({
   payload,
 });
 
-export const confirmIssueReleaseProjectSuccess = (data) => ({
+export const confirmIssueReleaseProjectSuccess = (data = {}) => ({
   type: CONFIRM_ISSUE_RELEASE_PROJECT_SUCCESS,
-  data,
+  ...data,
 });
 
 export const confirmIssueReleaseProjectFailure = (error) => ({
   type: CONFIRM_ISSUE_RELEASE_PROJECT_FAILURE,
+  error,
+});
+
+export const reviseIssueReleaseRequest = (payload) => ({
+  type: REVISE_ISSUE_RELEASE_REQUEST,
+  payload,
+});
+
+export const reviseIssueReleaseSuccess = (data = {}) => ({
+  type: REVISE_ISSUE_RELEASE_SUCCESS,
+  ...data,
+});
+
+export const reviseIssueReleaseFailure = (error) => ({
+  type: REVISE_ISSUE_RELEASE_FAILURE,
   error,
 });
