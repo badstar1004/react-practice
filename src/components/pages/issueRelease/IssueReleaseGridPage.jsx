@@ -38,9 +38,29 @@ import "./IssueReleaseGridPage.css";
 const TAB_REGULAR = "regular";
 const TAB_ISSUE = "issue";
 
+const EXCEL_NUMBER_CELL_CLASS = "issueReleaseNumber";
+const EXCEL_THOUSAND_FORMAT = { format: "#,##0" };
+
+/**
+ * exportDataAsExcel 은 valueFormatter 를 쓰지 않는다.
+ * cellClass / cellClassRules 결과 id 가 여기 id 와 같아야 천단위가 붙는다.
+ * v21 은 alignment 등 속성을 일부만 주면 스타일 전체를 버린다.
+ */
+const ISSUE_RELEASE_EXCEL_STYLES = [
+  EXCEL_NUMBER_CELL_CLASS,
+  "issue-release-number-cell",
+  "issue-release-total-cell",
+  "issue-release-editable-cell",
+  "issue-release-locked-cell",
+].map((id) => ({
+  id,
+  numberFormat: EXCEL_THOUSAND_FORMAT,
+}));
+
 const GRID_OPTIONS = {
   suppressRowTransform: true,
   suppressMovableColumns: true,
+  excelStyles: ISSUE_RELEASE_EXCEL_STYLES,
 };
 
 /** 월 컬럼의 field·colId — 26.08 을 변환한 26_08 (월은 01~12만 허용) */
@@ -199,7 +219,13 @@ const DEFAULT_COL_DEF = {
 };
 
 function toNumber(value) {
-  const parsed = Number(value);
+  if (value === null || value === undefined || value === "") {
+    return 0;
+  }
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+  const parsed = Number(String(value).replace(/,/g, "").trim());
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -422,15 +448,67 @@ function ensureExtraMonthFields(rows, extraColumns) {
   });
 }
 
+function getExportField(params) {
+  const colDef =
+    params && params.column && typeof params.column.getColDef === "function"
+      ? params.column.getColDef()
+      : {};
+  return colDef.field || "";
+}
+
+function formatCsvExportCell(params) {
+  const field = getExportField(params);
+  if (isPivotField(field) || isTotalField(field)) {
+    return formatNumber(params.value);
+  }
+  if (params.value == null) {
+    return "";
+  }
+  return String(params.value);
+}
+
+function exportIssueReleaseExcel(api, { fileName, sheetName }) {
+  api.exportDataAsExcel({
+    fileName,
+    sheetName,
+    columnGroups: true,
+    exportMode: "xlsx",
+    processCellCallback: (params) => {
+      const field = getExportField(params);
+      if (isPivotField(field) || isTotalField(field)) {
+        return toNumber(params.value);
+      }
+      if (params.value == null) {
+        return "";
+      }
+      return String(params.value);
+    },
+  });
+}
+
+function exportIssueReleaseCsv(api, { fileName }) {
+  api.exportDataAsCsv({
+    fileName,
+    columnGroups: true,
+    processCellCallback: formatCsvExportCell,
+  });
+}
+
 function formatNumber(value) {
   if (value === null || value === undefined || value === "") {
     return "";
   }
-  const num = Number(value);
-  if (!Number.isFinite(num)) {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : Number(String(value).replace(/,/g, "").trim());
+  if (!Number.isFinite(parsed)) {
     return "";
   }
-  return num.toLocaleString();
+  return parsed.toLocaleString("ko-KR", {
+    useGrouping: true,
+    maximumFractionDigits: 0,
+  });
 }
 
 function getDisplayedColIds(columnApi) {
@@ -657,7 +735,10 @@ function buildPivotColumnDefs(periodGroups, isEditMode, lockPastMonths) {
           width: 96,
           editable: canEdit,
           headerClass: locked ? "issue-release-locked-header" : undefined,
+          cellClass: EXCEL_NUMBER_CELL_CLASS,
           cellClassRules: withRangeCellClassRules({
+            [EXCEL_NUMBER_CELL_CLASS]: () => true,
+            "issue-release-number-cell": () => true,
             "issue-release-editable-cell": () => canEdit,
             "issue-release-locked-cell": () => locked,
           }),
@@ -669,10 +750,7 @@ function buildPivotColumnDefs(periodGroups, isEditMode, lockPastMonths) {
             return value === undefined || value === null ? 0 : value;
           },
           valueFormatter: (params) => formatNumber(params.value),
-          valueParser: (params) => {
-            const parsed = Number(params.newValue);
-            return Number.isFinite(parsed) ? parsed : 0;
-          },
+          valueParser: (params) => toNumber(params.newValue),
           valueSetter: (params) => {
             if (!params.data || locked) {
               return false;
@@ -720,8 +798,10 @@ function buildColumnDefs(t, periodGroups, isEditMode, lockPastMonths) {
       width: 90,
       pinned: "left",
       editable: false,
-      cellClass: "issue-release-total-cell",
-      cellClassRules: withRangeCellClassRules({}),
+      cellClass: ["issue-release-total-cell", EXCEL_NUMBER_CELL_CLASS],
+      cellClassRules: withRangeCellClassRules({
+        [EXCEL_NUMBER_CELL_CLASS]: () => true,
+      }),
       valueFormatter: (params) => formatNumber(params.value),
     },
     ...buildPivotColumnDefs(periodGroups, isEditMode, lockPastMonths),
@@ -1208,6 +1288,41 @@ const IssueReleaseGridPage = () => {
     dispatch(saveIssueReleaseRequest(payload));
   }, [dispatch, gridRowData, periodGroups, projectId]);
 
+  const handleExcelExport = useCallback(() => {
+    const api = gridApiRef.current;
+    if (api && typeof api.stopEditing === "function") {
+      api.stopEditing();
+    }
+
+    if (gridRowData.length === 0) {
+      setNotice({
+        type: "error",
+        message: t(
+          I18N_KEYS.ISSUE_RELEASE_EXCEL_EMPTY,
+          "내보낼 데이터가 없습니다.",
+        ),
+      });
+      return;
+    }
+
+    if (!api) {
+      return;
+    }
+
+    const fileName = `불출투입량_Rev${lastRev}`;
+    const sheetName = t(I18N_KEYS.ISSUE_RELEASE_SUMMARY, "불출 투입량");
+
+    // xlsx 는 Enterprise 의 excelCreator 가 있을 때만 동작한다.
+    if (api.excelCreator && typeof api.exportDataAsExcel === "function") {
+      exportIssueReleaseExcel(api, { fileName, sheetName });
+      return;
+    }
+
+    if (typeof api.exportDataAsCsv === "function") {
+      exportIssueReleaseCsv(api, { fileName });
+    }
+  }, [gridRowData.length, lastRev, t]);
+
   const handleModifyDate = useCallback(() => {
     if (gridRowData.length === 0) {
       setNotice({
@@ -1451,6 +1566,14 @@ const IssueReleaseGridPage = () => {
                 >
                   {t(I18N_KEYS.SAVE, "저장")}
                 </button>
+                <button
+                  type="button"
+                  className="btn btn-gray"
+                  disabled={isBusy || gridRowData.length === 0}
+                  onClick={handleExcelExport}
+                >
+                  {t(I18N_KEYS.ISSUE_RELEASE_EXCEL_EXPORT, "엑셀")}
+                </button>
               </>
             }
           >
@@ -1467,6 +1590,7 @@ const IssueReleaseGridPage = () => {
                 columnDefs={columnDefs}
                 defaultColDef={DEFAULT_COL_DEF}
                 gridOptions={GRID_OPTIONS}
+                excelStyles={ISSUE_RELEASE_EXCEL_STYLES}
                 context={gridContext}
                 onGridReady={onGridReady}
                 onCellValueChanged={onCellValueChanged}
