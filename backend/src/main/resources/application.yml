@@ -1,0 +1,27 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/api}
+  compression:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:react-practice-backend}
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: ${APP_TIME_ZONE:Asia/Seoul}
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:10MB}
+      max-request-size: ${MAX_REQUEST_SIZE:10MB}
+
+logging:
+  level:
+    root: ${ROOT_LOG_LEVEL:INFO}
+    com.reactpractice: ${APP_LOG_LEVEL:INFO}
